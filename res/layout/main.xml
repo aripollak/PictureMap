@@ -10,8 +10,13 @@
 	android:layout_width="fill_parent"
 	android:enabled="true"
 	android:clickable="true"
-	android:apiKey="FIXME"
+	android:apiKey="0dArjm0hSeuyRyXzUPAlmU-p6t-_pFgO2Sih-dw"
 	android:layout_height="fill_parent"/>
+<!-- NOTE: on release, change apiKey to:
+	android:apiKey=""0dArjm0hSeuwcLaq7Kgq20BrNVxzza9cBtgMKrg"
+	 for debugging, change to:
+	android:apiKey="0dArjm0hSeuyRyXzUPAlmU-p6t-_pFgO2Sih-dw"
+	-->
 
 
 </LinearLayout>
