@@ -4,14 +4,16 @@
 
 
 
-<Button android:layout_height="wrap_content" android:text="@string/choosepic" android:layout_width="fill_parent" android:id="@+id/choosepic"/>
+<!-- <Button android:layout_height="wrap_content" android:text="@string/choosepic" android:layout_width="fill_parent" android:id="@+id/choosepic"/> -->
 <com.google.android.maps.MapView 
 	android:id="@+id/map"
 	android:layout_width="fill_parent"
 	android:enabled="true"
 	android:clickable="true"
 	android:apiKey="0dArjm0hSeuyRyXzUPAlmU-p6t-_pFgO2Sih-dw"
-	android:layout_height="fill_parent"/>
+	android:layout_height="fill_parent"
+	android:focusable="true"
+	android:focusableInTouchMode="true"/>
 <!-- NOTE: on release, change apiKey to:
 	android:apiKey=""0dArjm0hSeuwcLaq7Kgq20BrNVxzza9cBtgMKrg"
 	 for debugging, change to:
