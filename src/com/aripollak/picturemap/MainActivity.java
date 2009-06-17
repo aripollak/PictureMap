@@ -1,3 +1,8 @@
+/* Copyright (c) 2009 Ari Pollak <aripollak@gmail.com>
+ * 
+ * YOU MAY NOT LOOK AT THIS PROGRAM.
+ */
+
 package com.aripollak.picturemap;
 
 import java.io.FileNotFoundException;
