@@ -81,13 +81,11 @@ public class MainActivity extends MapActivity {
 /*    @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
     	super.onRestoreInstanceState(savedInstanceState);
-    	// TODO: restore map state
     }
     
     @Override
     protected void onSaveInstanceState(Bundle outState) {
     	super.onSaveInstanceState(outState);
-    	// TODO: save map state
     }
 */
     
@@ -108,7 +106,8 @@ public class MainActivity extends MapActivity {
     // TODO: let people search for stuff by date/picture
     // TODO: scale images according to current zoom level
     // TODO: Implement an intent to get called from Share in the gallery?
-    private void populateMap() {  	
+    private void populateMap() {
+    	// Get the last 50 images from the external image store
     	Cursor cursor = managedQuery(Images.Media.EXTERNAL_CONTENT_URI, null, 
     								 null, null, Images.Media.DATE_TAKEN + " DESC LIMIT 50");
     	int idColumn = cursor.getColumnIndexOrThrow(Images.Media._ID);
@@ -133,7 +132,7 @@ public class MainActivity extends MapActivity {
     		stuff += " " + lat;
     		stuff += " " + lon;
     		stuff += " " + cursor.getString(dataColumn);
-    		Log.i(this.getLocalClassName(), stuff);
+    		Log.d(this.getLocalClassName(), stuff);
     		
     		// Retrieve thumbnail bitmap from thumbnail content provider
     		Cursor thumbCursor = managedQuery(
