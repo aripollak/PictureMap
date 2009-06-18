@@ -123,16 +123,18 @@ public class MainActivity extends MapActivity {
     	}
     	
     	do {
+    		if (cursor.isNull(latitudeColumn))
+    			continue;
         	int lat = (int) (cursor.getDouble(latitudeColumn) * 1E6);
         	int lon = (int) (cursor.getDouble(longitudeColumn) * 1E6);
         	int imageId = cursor.getInt(idColumn);
-    		String stuff = "" + imageId;
-    		stuff += " " + cursor.getString(bucketNameColumn);
-    		stuff += " " + cursor.getString(bucketIdColumn);
-    		stuff += " " + lat;
-    		stuff += " " + lon;
-    		stuff += " " + cursor.getString(dataColumn);
-    		Log.d(this.getLocalClassName(), stuff);
+    		StringBuilder stuff = new StringBuilder("" + imageId);
+    		stuff.append(" ").append(cursor.getString(bucketNameColumn));
+    		stuff.append(" ").append(cursor.getString(bucketIdColumn));
+    		stuff.append(" ").append(lat);
+    		stuff.append(" ").append(lon);
+    		stuff.append(" ").append(cursor.getString(dataColumn));
+    		Log.d(this.getLocalClassName(), stuff.toString());
     		
     		// Retrieve thumbnail bitmap from thumbnail content provider
     		Cursor thumbCursor = managedQuery(
