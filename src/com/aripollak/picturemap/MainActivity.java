@@ -11,18 +11,25 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.AlertDialog.Builder;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.PaintDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore.Images;
+import android.util.AttributeSet;
 import android.util.Log;
+import android.util.Xml;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -33,10 +40,13 @@ import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
+import com.google.android.maps.Projection;
+
 
 public class MainActivity extends MapActivity {
 	
 	MapView mMapView;
+	View mPopup;
 	List<Overlay> mMapOverlays;
 	Drawable mDrawable;
 	ImageOverlay mItemizedOverlay;
@@ -54,10 +64,22 @@ public class MainActivity extends MapActivity {
         mMapView = (MapView) findViewById(R.id.map);
         mMapView.setBuiltInZoomControls(true);
         
+		// TODO: make the button do something, and make it look like a caption
+        mPopup = getLayoutInflater().inflate(R.layout.popup, null);
+        //AttributeSet set = Xml.asAttributeSet(getResources().getXml(R.layout.popup));
+        //MapView.LayoutParams params = new MapView.LayoutParams(this, set);
+		//params.mode = MapView.LayoutParams.MODE_MAP;
+		//params.alignment = MapView.LayoutParams.BOTTOM_CENTER;
+		MapView.LayoutParams params = new MapView.LayoutParams(
+				ViewGroup.LayoutParams.WRAP_CONTENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT,
+				new GeoPoint(0, 0), MapView.LayoutParams.BOTTOM_CENTER);
+		mMapView.addView(mPopup, params);
+        
         mMapOverlays = mMapView.getOverlays();
         mDrawable = this.getResources().getDrawable(
         				android.R.drawable.ic_menu_myplaces);
-        mItemizedOverlay = new ImageOverlay(mDrawable);
+        mItemizedOverlay = new ImageOverlay(mDrawable, mMapView);
         mMyLocationOverlay = new MyLocationOverlay(getApplicationContext(), mMapView);
 
         populateMap();
@@ -157,13 +179,13 @@ public class MainActivity extends MapActivity {
 				// TODO: keep aspect ratio
 				thumb = Bitmap.createScaledBitmap(thumb, 50, 50, true);
 			} catch (FileNotFoundException e) {
-				Toast.makeText(getApplicationContext(),
+				Toast.makeText(this,
 							   "File not found getting thumbnail",
 							   Toast.LENGTH_SHORT);
 				e.printStackTrace();
 				continue;
 			} catch (IOException e) {
-				Toast.makeText(getApplicationContext(),
+				Toast.makeText(this,
 						       "I/O Exception getting thumbnail",
 						       Toast.LENGTH_SHORT);
 				e.printStackTrace();
@@ -184,13 +206,16 @@ public class MainActivity extends MapActivity {
     protected boolean isRouteDisplayed() { return false; }
     
 
-	private class ImageOverlay extends ItemizedOverlay<OverlayItem> {
+	private class ImageOverlay extends ItemizedOverlay<OverlayItem> 
+	implements com.google.android.maps.ItemizedOverlay.OnFocusChangeListener {
 
 		private ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
+		private MapView mMapView;
 		
-		
-		public ImageOverlay(Drawable defaultMarker) {
+		public ImageOverlay(Drawable defaultMarker, MapView mapView) {
 			super(boundCenterBottom(defaultMarker));
+			mMapView = mapView;
+			setOnFocusChangeListener(this);
 			populate();
 		}
 		
@@ -212,13 +237,15 @@ public class MainActivity extends MapActivity {
 			return mOverlays.size();
 		}
 
-	    // TODO: Implement popup when clicking on an image
-	    //    maybe http://www.tbray.org/ongoing/When/200x/2009/01/08/On-Android-Maps
-	    //    or with setOnFocusChangeListener?
-		@Override
-		protected boolean onTap(int index) {
-			System.out.println("tappa tappa " + index);
-			return true;
+	    // pop up a balloon when clicking on an image marker
+		public void onFocusChanged(ItemizedOverlay overlay, OverlayItem item) {
+			if (item == null) {
+				mPopup.setVisibility(View.GONE);
+				return;
+			}
+
+			((MapView.LayoutParams)mPopup.getLayoutParams()).point = item.getPoint();
+			mPopup.setVisibility(View.VISIBLE);
 		}
 	}
    
