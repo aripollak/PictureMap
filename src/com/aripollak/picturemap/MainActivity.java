@@ -75,7 +75,7 @@ public class MainActivity extends MapActivity {
 				ViewGroup.LayoutParams.WRAP_CONTENT,
 				new GeoPoint(0, 0), MapView.LayoutParams.BOTTOM_CENTER);
 		mMapView.addView(mPopup, params);
-        
+
         mMapOverlays = mMapView.getOverlays();
         mDrawable = this.getResources().getDrawable(
         				android.R.drawable.ic_menu_myplaces);
