@@ -145,18 +145,21 @@ public class MainActivity extends MapActivity {
     	}
     	
     	do {
-    		if (cursor.isNull(latitudeColumn))
+    		if (cursor.isNull(latitudeColumn) || cursor.isNull(longitudeColumn))
     			continue;
         	int lat = (int) (cursor.getDouble(latitudeColumn) * 1E6);
         	int lon = (int) (cursor.getDouble(longitudeColumn) * 1E6);
         	int imageId = cursor.getInt(idColumn);
-    		StringBuilder stuff = new StringBuilder("" + imageId);
+    		/* StringBuilder stuff = new StringBuilder("" + imageId);
     		stuff.append(" ").append(cursor.getString(bucketNameColumn));
     		stuff.append(" ").append(cursor.getString(bucketIdColumn));
     		stuff.append(" ").append(lat);
     		stuff.append(" ").append(lon);
     		stuff.append(" ").append(cursor.getString(dataColumn));
-    		Log.d(this.getLocalClassName(), stuff.toString());
+    		Log.d(this.getLocalClassName(), stuff.toString()); */
+    		
+    		if (lat == 0.0 || lon == 0.0)
+    			continue;
     		
     		// Retrieve thumbnail bitmap from thumbnail content provider
     		Cursor thumbCursor = managedQuery(
@@ -197,7 +200,7 @@ public class MainActivity extends MapActivity {
         	OverlayItem item = new OverlayItem(point, cursor.getString(titleColumn), "" + imageId);
         	item.setMarker(new BitmapDrawable(thumb));
         	mItemizedOverlay.addOverlay(item);
-        	mMapView.getController().animateTo(point);
+        	//mMapView.getController().animateTo(point);
     	} while (cursor.moveToNext());
     	
     }
@@ -237,7 +240,9 @@ public class MainActivity extends MapActivity {
 			return mOverlays.size();
 		}
 
-	    // pop up a balloon when clicking on an image marker
+	    /** pop up a balloon when clicking on an image marker;
+	     *  disable it when clicking elsewhere
+	     */
 		public void onFocusChanged(ItemizedOverlay overlay, OverlayItem item) {
 			if (item == null) {
 				mPopup.setVisibility(View.GONE);
