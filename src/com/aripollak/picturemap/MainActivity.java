@@ -30,6 +30,7 @@ import android.util.Log;
 import android.util.Xml;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -41,6 +42,7 @@ import com.google.android.maps.MyLocationOverlay;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 import com.google.android.maps.Projection;
+import com.google.android.maps.MapView.LayoutParams;
 
 
 public class MainActivity extends MapActivity {
@@ -49,7 +51,7 @@ public class MainActivity extends MapActivity {
 	View mPopup;
 	List<Overlay> mMapOverlays;
 	Drawable mDrawable;
-	ImageOverlay mItemizedOverlay;
+	ImageOverlay mImageOverlay;
 	MyLocationOverlay mMyLocationOverlay;
 	
 	/* Called when the activity is first created. */
@@ -64,27 +66,29 @@ public class MainActivity extends MapActivity {
         mMapView = (MapView) findViewById(R.id.map);
         mMapView.setBuiltInZoomControls(true);
         
-		// TODO: make the button do something, and make it look like a caption
-        mPopup = getLayoutInflater().inflate(R.layout.popup, null);
-        //AttributeSet set = Xml.asAttributeSet(getResources().getXml(R.layout.popup));
-        //MapView.LayoutParams params = new MapView.LayoutParams(this, set);
-		//params.mode = MapView.LayoutParams.MODE_MAP;
-		//params.alignment = MapView.LayoutParams.BOTTOM_CENTER;
+        // Can't embed the popup in main.xml since we can't seem to access
+        // the MapView.LayoutParams-specific fields from there.
+        mPopup = getLayoutInflater().inflate(R.layout.popup, null); 
 		MapView.LayoutParams params = new MapView.LayoutParams(
 				ViewGroup.LayoutParams.WRAP_CONTENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT,
 				new GeoPoint(0, 0), MapView.LayoutParams.BOTTOM_CENTER);
-		mMapView.addView(mPopup, params);
+        mMapView.addView(mPopup, params);
+		
+		// TODO: make button look like a caption
+		Button openImageButton = (Button) findViewById(R.id.viewButton);
+		openImageButton.setOnClickListener(mViewImageListener);
+		
 
         mMapOverlays = mMapView.getOverlays();
         mDrawable = this.getResources().getDrawable(
         				android.R.drawable.ic_menu_myplaces);
-        mItemizedOverlay = new ImageOverlay(mDrawable, mMapView);
+        mImageOverlay = new ImageOverlay(mDrawable, mMapView);
         mMyLocationOverlay = new MyLocationOverlay(getApplicationContext(), mMapView);
 
         populateMap();
         
-    	mMapOverlays.add(mItemizedOverlay);
+    	mMapOverlays.add(mImageOverlay);
     	mMapOverlays.add(mMyLocationOverlay);
     }
     
@@ -111,18 +115,6 @@ public class MainActivity extends MapActivity {
     }
 */
     
-    
-    /** Clicked on Choose Picture button */
-    /* private final OnClickListener mGetImageListener = new OnClickListener() {
-    	public void onClick(View v) {
-    		Intent intent = new Intent(Intent.ACTION_GET_CONTENT);              
-            //intent.addCategory(Intent.CATEGORY_OPENABLE);
-            // TODO: specify a content uri for the camera bucket by using a ContentProvider?
-            intent.setType("image/*");
-            startActivityForResult(Intent.createChooser(
-            		intent, getString(R.string.select_image)), 0);
-    	}
-    }; */
 
     /** Populate the map overlay with all the images we find */ 
     // TODO: let people search for stuff by date/picture
@@ -199,11 +191,35 @@ public class MainActivity extends MapActivity {
         	GeoPoint point = new GeoPoint(lat, lon);
         	OverlayItem item = new OverlayItem(point, cursor.getString(titleColumn), "" + imageId);
         	item.setMarker(new BitmapDrawable(thumb));
-        	mItemizedOverlay.addOverlay(item);
+        	mImageOverlay.addOverlay(item);
         	//mMapView.getController().animateTo(point);
     	} while (cursor.moveToNext());
     	
     }
+    
+    
+    /** Clicked on View Picture button */
+    private final OnClickListener mViewImageListener = new OnClickListener() {
+    	public void onClick(View v) {
+    		int index = mImageOverlay.getLastFocusedIndex();
+    		if (index == -1) {
+    			Log.i(getLocalClassName(),
+    					"Couldn't get focused image?");
+    			return;
+    		}
+    		OverlayItem item = mImageOverlay.getItem(index);
+    		Uri uri = Uri.withAppendedPath(
+						Images.Media.EXTERNAL_CONTENT_URI,
+						item.getSnippet());
+    		System.out.println(item.getSnippet());
+    		Intent intent = new Intent(Intent.ACTION_VIEW);
+    		intent.setData(uri);
+            //intent.setDataAndType(uri, "image/jpeg");
+            startActivity(Intent.createChooser(
+            		intent, getString(R.string.select_image)));
+    	}
+    };
+
     
     @Override
     protected boolean isRouteDisplayed() { return false; }
@@ -243,15 +259,17 @@ public class MainActivity extends MapActivity {
 	    /** pop up a balloon when clicking on an image marker;
 	     *  disable it when clicking elsewhere
 	     */
+		@Override
 		public void onFocusChanged(ItemizedOverlay overlay, OverlayItem item) {
 			if (item == null) {
 				mPopup.setVisibility(View.GONE);
 				return;
 			}
-
-			((MapView.LayoutParams)mPopup.getLayoutParams()).point = item.getPoint();
+			
+			((MapView.LayoutParams) mPopup.getLayoutParams()).point = item.getPoint();
 			mPopup.setVisibility(View.VISIBLE);
 		}
 	}
+
    
 }

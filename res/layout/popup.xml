@@ -3,7 +3,7 @@
 		android:id="@+id/popup"
 		android:background="@android:drawable/alert_light_frame"
 		android:visibility="gone">
-	<Button android:id="@+id/popupButton" android:text="View image"
+	<Button android:id="@+id/viewButton" android:text="View image"
 			android:layout_width="wrap_content" android:layout_height="wrap_content"
 			/>
 </RelativeLayout>
