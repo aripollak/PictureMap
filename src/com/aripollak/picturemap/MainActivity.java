@@ -1,6 +1,19 @@
 /* Copyright (c) 2009 Ari Pollak <aripollak@gmail.com>
- * 
- * YOU MAY NOT LOOK AT THIS PROGRAM.
+
+   This file is part of Picture Map.
+
+   Picture Map is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   Picture Map is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with Picture Map.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package com.aripollak.picturemap;
@@ -118,7 +131,6 @@ public class MainActivity extends MapActivity {
 
     /** Populate the map overlay with all the images we find */ 
     // TODO: let people search for stuff by date/picture
-    // TODO: scale images according to current zoom level
     // TODO: Implement an intent to get called from Share in the gallery?
     private void populateMap() {
     	// Get the last 50 images from the external image store
@@ -200,6 +212,7 @@ public class MainActivity extends MapActivity {
     
     /** Clicked on View Picture button */
     private final OnClickListener mViewImageListener = new OnClickListener() {
+    	@Override
     	public void onClick(View v) {
     		int index = mImageOverlay.getLastFocusedIndex();
     		if (index == -1) {
