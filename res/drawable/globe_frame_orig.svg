@@ -306,7 +306,9 @@
      inkscape:window-x="37"
      inkscape:window-y="31"
      inkscape:current-layer="layer2"
-     showborder="true" />
+     showborder="true"
+     showguides="true"
+     inkscape:guide-bbox="true" />
   <metadata
      id="metadata2779">
     <rdf:RDF>
@@ -365,12 +367,15 @@
        width="377.92798"
        height="303.69214"
        x="120.35207"
-       y="127.48711" />
+       y="127.48711"
+       inkscape:export-filename="globe_frame.png"
+       inkscape:export-xdpi="8.9598312"
+       inkscape:export-ydpi="8.9598312" />
     <g
        style="overflow:visible;display:inline"
        id="g2800"
        transform="translate(19.900548,0.2802774)"
-       inkscape:export-filename="/usr/src/PictureMap/res/drawable/globe_frame.png"
+       inkscape:export-filename="globe_frame.png"
        inkscape:export-xdpi="8.9598312"
        inkscape:export-ydpi="8.9598312">
       <g
@@ -1298,7 +1303,7 @@
        style="display:inline"
        id="g3285"
        transform="matrix(1.9883669,0,0,1.9883669,-192.23067,-352.93465)"
-       inkscape:export-filename="/usr/src/PictureMap/res/drawable/globe_frame.png"
+       inkscape:export-filename="globe_frame.png"
        inkscape:export-xdpi="8.9598312"
        inkscape:export-ydpi="8.9598312">
       <g
