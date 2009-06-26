@@ -130,12 +130,15 @@ public class MainActivity extends MapActivity {
     
 
     /** Populate the map overlay with all the images we find */ 
+    // TODO: do this from an AsyncTask
     // TODO: let people search for stuff by date/picture
     // TODO: Implement an intent to get called from Share in the gallery?
     private void populateMap() {
     	// Get the last 50 images from the external image store
     	Cursor cursor = managedQuery(Images.Media.EXTERNAL_CONTENT_URI, null, 
     								 null, null, Images.Media.DATE_TAKEN + " DESC LIMIT 50");
+    	if (cursor == null)
+    		return;
     	int idColumn = cursor.getColumnIndexOrThrow(Images.Media._ID);
     	int titleColumn = cursor.getColumnIndexOrThrow(Images.Media.TITLE);
     	int bucketNameColumn = cursor.getColumnIndexOrThrow(Images.Media.BUCKET_DISPLAY_NAME);
