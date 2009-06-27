@@ -95,6 +95,9 @@ public class MainActivity extends MapActivity {
         mMyLocationOverlay = new MyLocationOverlay(getApplicationContext(), mMapView);
 
         new PopulateMapTask().execute();
+        
+    	mMapOverlays.add(mImageOverlay);
+    	mMapOverlays.add(mMyLocationOverlay);
     }
     
     @Override
@@ -205,8 +208,6 @@ public class MainActivity extends MapActivity {
     	protected void onPostExecute(Long result) {
     		super.onPostExecute(result);
     		setProgressBarIndeterminateVisibility(false);
-        	mMapOverlays.add(mImageOverlay);
-        	mMapOverlays.add(mMyLocationOverlay);
     	}
     	
     	/** Try to read the specified image and get a Point from the 
