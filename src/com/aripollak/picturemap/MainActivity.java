@@ -134,11 +134,12 @@ public class MainActivity extends MapActivity {
     
 
     /** Populate the map overlay with all the images we find */ 
+    // TODO: Attach to media scanner to redo map if card is re-inserted
     // TODO: let people search for stuff by date/picture
     // TODO: Implement an intent to get called from Share in the gallery?
-    private class PopulateMapTask extends AsyncTask<Activity, OverlayItem, Long> {
+    private class PopulateMapTask extends AsyncTask<Uri, OverlayItem, Long> {
     	@Override
-		protected Long doInBackground(Activity... activity) {
+		protected Long doInBackground(Uri... uris) {
 	    	// Get the last 50 images from the external image store
 	    	Cursor cursor = managedQuery(Images.Media.EXTERNAL_CONTENT_URI, null, 
 	    								 null, null, Images.Media.DATE_TAKEN + " DESC LIMIT 50");
@@ -191,8 +192,11 @@ public class MainActivity extends MapActivity {
 										Uri.withAppendedPath(
 											Images.Thumbnails.EXTERNAL_CONTENT_URI,
 											thumbCursor.getString(thumbIdColumn)));
-					// TODO: keep aspect ratio
-					thumb = Bitmap.createScaledBitmap(thumb, 50, 50, true);
+					// Make sure we keep the aspect ratio, with a maximum edge of 50 pixels
+					float factor = Math.max(thumb.getHeight() / 50, thumb.getHeight() / 50);
+					thumb = Bitmap.createScaledBitmap(
+										thumb, Math.min(1, (int)(thumb.getWidth() / factor)), 
+										Math.min(1, (int)(thumb.getHeight() / factor)), true);
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
 					continue;
