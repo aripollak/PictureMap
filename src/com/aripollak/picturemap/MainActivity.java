@@ -31,7 +31,10 @@ import android.app.AlertDialog.Builder;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.PaintDrawable;
@@ -193,10 +196,12 @@ public class MainActivity extends MapActivity {
 											Images.Thumbnails.EXTERNAL_CONTENT_URI,
 											thumbCursor.getString(thumbIdColumn)));
 					// Make sure we keep the aspect ratio, with a maximum edge of 50 pixels
-					float factor = Math.max(thumb.getHeight() / 50, thumb.getHeight() / 50);
+					float factor = Math.max(thumb.getHeight() / 50f, thumb.getHeight() / 50f);
+					int scaledWidth = Math.max(1, (int)(thumb.getWidth() / factor));
+					int scaledHeight = Math.max(1, (int)(thumb.getHeight() / factor));
 					thumb = Bitmap.createScaledBitmap(
-										thumb, Math.min(1, (int)(thumb.getWidth() / factor)), 
-										Math.min(1, (int)(thumb.getHeight() / factor)), true);
+										thumb, scaledWidth, 
+										scaledHeight, true);
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
 					continue;
