@@ -44,6 +44,7 @@ import android.util.Log;
 import android.util.Xml;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.Toast;
@@ -72,6 +73,7 @@ public class MainActivity extends MapActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.main);
         
         /*Button button = (Button)findViewById(R.id.choosepic);
@@ -118,6 +120,7 @@ public class MainActivity extends MapActivity {
     	mMyLocationOverlay.disableMyLocation();
     }
     
+    // TODO: save currently focused map item
 /*    @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
     	super.onRestoreInstanceState(savedInstanceState);
@@ -165,7 +168,7 @@ public class MainActivity extends MapActivity {
 	    		stuff.append(" ").append(lat);
 	    		stuff.append(" ").append(lon);
 	    		stuff.append(" ").append(cursor.getString(dataColumn));
-	    		Log.d(this.getLocalClassName(), stuff.toString()); */
+	    		Log.d(this.getClass().toString(), stuff.toString()); */
 	    		
 	    		if (lat == 0.0 || lon == 0.0)
 	    			continue;
@@ -215,16 +218,18 @@ public class MainActivity extends MapActivity {
         	//mMapView.getController().animateTo(point);
     	}
     	
-    	// TODO: add some sort of progress thing to the titlebar
-    	/* @Override
+    	@Override
     	protected void onPreExecute() {
     		super.onPreExecute();
+    		setProgressBarIndeterminateVisibility(true);
+    		
     	}
     	
     	@Override
     	protected void onPostExecute(Long result) {
     		super.onPostExecute(result);
-    	} */
+    		setProgressBarIndeterminateVisibility(false);
+    	}
     }
     
     
