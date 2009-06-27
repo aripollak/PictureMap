@@ -18,39 +18,30 @@
 
 package com.aripollak.picturemap;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.AlertDialog.Builder;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Point;
-import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.PaintDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore.Images;
-import android.util.AttributeSet;
 import android.util.Log;
-import android.util.Xml;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.Toast;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
@@ -59,8 +50,6 @@ import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
-import com.google.android.maps.Projection;
-import com.google.android.maps.MapView.LayoutParams;
 
 
 public class MainActivity extends MapActivity {
@@ -106,9 +95,6 @@ public class MainActivity extends MapActivity {
         mMyLocationOverlay = new MyLocationOverlay(getApplicationContext(), mMapView);
 
         new PopulateMapTask().execute();
-        
-    	mMapOverlays.add(mImageOverlay);
-    	mMapOverlays.add(mMyLocationOverlay);
     }
     
     @Override
@@ -143,17 +129,15 @@ public class MainActivity extends MapActivity {
     private class PopulateMapTask extends AsyncTask<Uri, OverlayItem, Long> {
     	@Override
 		protected Long doInBackground(Uri... uris) {
-	    	// Get the last 50 images from the external image store
+	    	// Get the last 100 images from the external image store
 	    	Cursor cursor = managedQuery(Images.Media.EXTERNAL_CONTENT_URI, null, 
-	    								 null, null, Images.Media.DATE_TAKEN + " DESC LIMIT 50");
+	    								 null, null, Images.Media.DATE_TAKEN + " DESC LIMIT 100");
 	    	if (cursor == null)
 	    		return null;
 	    	int idColumn = cursor.getColumnIndexOrThrow(Images.Media._ID);
 	    	int titleColumn = cursor.getColumnIndexOrThrow(Images.Media.TITLE);
 	    	int bucketNameColumn = cursor.getColumnIndexOrThrow(Images.Media.BUCKET_DISPLAY_NAME);
 	    	int bucketIdColumn = cursor.getColumnIndexOrThrow(Images.Media.BUCKET_ID);
-	    	int longitudeColumn = cursor.getColumnIndexOrThrow(Images.Media.LONGITUDE);
-	    	int latitudeColumn = cursor.getColumnIndexOrThrow(Images.Media.LATITUDE);
 	    	int dataColumn = cursor.getColumnIndexOrThrow(Images.Media.DATA);
 	    	
 	    	if (!cursor.moveToFirst()) {
@@ -161,23 +145,13 @@ public class MainActivity extends MapActivity {
 	    	}
 	    	
 	    	do {
-	    		if (cursor.isNull(latitudeColumn) || cursor.isNull(longitudeColumn))
-	    			continue;
-	        	int lat = (int) (cursor.getDouble(latitudeColumn) * 1E6);
-	        	int lon = (int) (cursor.getDouble(longitudeColumn) * 1E6);
-	        	int imageId = cursor.getInt(idColumn);
-	    		/* StringBuilder stuff = new StringBuilder("" + imageId);
-	    		stuff.append(" ").append(cursor.getString(bucketNameColumn));
-	    		stuff.append(" ").append(cursor.getString(bucketIdColumn));
-	    		stuff.append(" ").append(lat);
-	    		stuff.append(" ").append(lon);
-	    		stuff.append(" ").append(cursor.getString(dataColumn));
-	    		Log.d(this.getClass().toString(), stuff.toString()); */
-	    		
-	    		if (lat == 0.0 || lon == 0.0)
+	       		String imageLocation = cursor.getString(dataColumn);
+	    		GeoPoint point = getGPSInfo(imageLocation);
+	    		if (point == null)
 	    			continue;
 	    		
 	    		// Retrieve thumbnail bitmap from thumbnail content provider
+	    		int imageId = cursor.getInt(idColumn);
 	    		Cursor thumbCursor = managedQuery(
 	    				 Images.Thumbnails.EXTERNAL_CONTENT_URI,
 	    				 null,
@@ -195,6 +169,8 @@ public class MainActivity extends MapActivity {
 										Uri.withAppendedPath(
 											Images.Thumbnails.EXTERNAL_CONTENT_URI,
 											thumbCursor.getString(thumbIdColumn)));
+					if (thumb == null)
+						continue;
 					// Make sure we keep the aspect ratio, with a maximum edge of 50 pixels
 					float factor = Math.max(thumb.getHeight() / 50f, thumb.getHeight() / 50f);
 					int scaledWidth = Math.max(1, (int)(thumb.getWidth() / factor));
@@ -203,7 +179,6 @@ public class MainActivity extends MapActivity {
 										thumb, scaledWidth, 
 										scaledHeight, true);
 				} catch (FileNotFoundException e) {
-					e.printStackTrace();
 					continue;
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -211,7 +186,6 @@ public class MainActivity extends MapActivity {
 				}
 	    		
 				// add the thumbnail as the marker
-	        	GeoPoint point = new GeoPoint(lat, lon);
 	        	OverlayItem item = new OverlayItem(point, cursor.getString(titleColumn), "" + imageId);
 	        	item.setMarker(new BitmapDrawable(thumb));
 	        	publishProgress(item);
@@ -226,18 +200,90 @@ public class MainActivity extends MapActivity {
         	mImageOverlay.addOverlay(items[0]);
         	//mMapView.getController().animateTo(point);
     	}
-    	
-    	@Override
-    	protected void onPreExecute() {
-    		super.onPreExecute();
-    		setProgressBarIndeterminateVisibility(true);
-    		
-    	}
-    	
+    	   	
     	@Override
     	protected void onPostExecute(Long result) {
     		super.onPostExecute(result);
     		setProgressBarIndeterminateVisibility(false);
+        	mMapOverlays.add(mImageOverlay);
+        	mMapOverlays.add(mMyLocationOverlay);
+    	}
+    	
+    	/** Try to read the specified image and get a Point from the 
+    	 *  location info inside.
+    	 *  NOTE: Currently only supports images created by
+    	 *  the Android camera.
+    	 *  @param imageLocation path to image on filesystem
+    	 *  @return null if we couldn't get a proper location
+    	 */
+    	private GeoPoint getGPSInfo(String imageLocation) {
+    		int latE6 = 0;
+    		int lonE6 = 0;
+    		try {
+    			final byte[] GPSVerInfo = new byte[] {2, 2, 0, 0};
+    			byte temp[] = new byte[4];
+				ByteBuffer buffer = ByteBuffer.wrap(temp);
+    			char reference;
+    			int degrees;
+    			int minutes;
+    			float seconds;
+				FileInputStream stream = new FileInputStream(imageLocation);
+				FileChannel channel = stream.getChannel();
+				// Check GPS version ID
+				channel.read(buffer, 0x218);
+				if(!Arrays.equals(temp, GPSVerInfo)) {
+					return null;
+				}
+				
+				// Read latitude reference (N or S)
+				buffer.rewind();
+				channel.read(buffer, 0x224);
+				reference = (char) temp[0];
+				if (reference != 'N' && reference != 'S') {
+					return null;
+				}
+				// Read latitude
+				buffer.rewind();
+				channel.read(buffer, 0x2c4);
+				degrees = buffer.getInt(0);
+				buffer.rewind();
+				channel.read(buffer, 0x2cc);
+				minutes = buffer.getInt(0);
+				buffer.rewind();
+				channel.read(buffer, 0x2d4);
+				seconds = buffer.getInt(0) / 100f;
+				latE6 = degrees * (int)1E6;
+				latE6 += (((minutes * 60.0) + seconds) / 3600f) * 1E6;
+				latE6 *= (reference == 'N') ? 1 : -1;
+				
+				// Read longitude reference (W or E)
+				buffer.rewind();
+				channel.read(buffer, 0x23c);
+				reference = (char) temp[0];
+				if (reference != 'E' && reference != 'W') {
+					return null;
+				}
+				// Read latitude
+				buffer.rewind();
+				channel.read(buffer, 0x2dc);
+				degrees = buffer.getInt(0);
+				buffer.rewind();
+				channel.read(buffer, 0x2e4);
+				minutes = buffer.getInt(0);
+				buffer.rewind();
+				channel.read(buffer, 0x2ec);
+				seconds = buffer.getInt(0) / 100f;
+				lonE6 = degrees * (int)1E6;
+				lonE6 += (((minutes * 60.0) + seconds) / 3600f) * 1E6;
+				lonE6 *= (reference == 'E') ? 1 : -1;
+			} catch (FileNotFoundException e) {
+				return null;
+			} catch (IOException e) {
+				e.printStackTrace();
+				return null;
+			}
+			
+    		return new GeoPoint(latE6, lonE6);
     	}
     }
     
