@@ -8,12 +8,12 @@
 	android:layout_width="fill_parent"
 	android:enabled="true"
 	android:clickable="true"
-	android:apiKey="0dArjm0hSeuyRyXzUPAlmU-p6t-_pFgO2Sih-dw"
+	android:apiKey="0dArjm0hSeuwcLaq7Kgq20BrNVxzza9cBtgMKrg"
 	android:layout_height="fill_parent"
 	android:focusable="true"
 	android:focusableInTouchMode="true" />
 <!-- NOTE: on release, change apiKey to:
-	android:apiKey=""0dArjm0hSeuwcLaq7Kgq20BrNVxzza9cBtgMKrg"
+	android:apiKey="0dArjm0hSeuwcLaq7Kgq20BrNVxzza9cBtgMKrg"
 	 for debugging, change to:
 	android:apiKey="0dArjm0hSeuyRyXzUPAlmU-p6t-_pFgO2Sih-dw"
 	-->
