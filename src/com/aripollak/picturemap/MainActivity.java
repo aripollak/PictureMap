@@ -36,6 +36,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.PaintDrawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore.Images;
 import android.util.AttributeSet;
@@ -99,7 +100,7 @@ public class MainActivity extends MapActivity {
         mImageOverlay = new ImageOverlay(mDrawable, mMapView);
         mMyLocationOverlay = new MyLocationOverlay(getApplicationContext(), mMapView);
 
-        populateMap();
+        new PopulateMapTask().execute();
         
     	mMapOverlays.add(mImageOverlay);
     	mMapOverlays.add(mMyLocationOverlay);
@@ -130,86 +131,100 @@ public class MainActivity extends MapActivity {
     
 
     /** Populate the map overlay with all the images we find */ 
-    // TODO: do this from an AsyncTask
     // TODO: let people search for stuff by date/picture
     // TODO: Implement an intent to get called from Share in the gallery?
-    private void populateMap() {
-    	// Get the last 50 images from the external image store
-    	Cursor cursor = managedQuery(Images.Media.EXTERNAL_CONTENT_URI, null, 
-    								 null, null, Images.Media.DATE_TAKEN + " DESC LIMIT 50");
-    	if (cursor == null)
-    		return;
-    	int idColumn = cursor.getColumnIndexOrThrow(Images.Media._ID);
-    	int titleColumn = cursor.getColumnIndexOrThrow(Images.Media.TITLE);
-    	int bucketNameColumn = cursor.getColumnIndexOrThrow(Images.Media.BUCKET_DISPLAY_NAME);
-    	int bucketIdColumn = cursor.getColumnIndexOrThrow(Images.Media.BUCKET_ID);
-    	int longitudeColumn = cursor.getColumnIndexOrThrow(Images.Media.LONGITUDE);
-    	int latitudeColumn = cursor.getColumnIndexOrThrow(Images.Media.LATITUDE);
-    	int dataColumn = cursor.getColumnIndexOrThrow(Images.Media.DATA);
-    	
-    	if (!cursor.moveToFirst()) {
-    		return;
+    private class PopulateMapTask extends AsyncTask<Activity, OverlayItem, Long> {
+    	@Override
+		protected Long doInBackground(Activity... activity) {
+	    	// Get the last 50 images from the external image store
+	    	Cursor cursor = managedQuery(Images.Media.EXTERNAL_CONTENT_URI, null, 
+	    								 null, null, Images.Media.DATE_TAKEN + " DESC LIMIT 50");
+	    	if (cursor == null)
+	    		return null;
+	    	int idColumn = cursor.getColumnIndexOrThrow(Images.Media._ID);
+	    	int titleColumn = cursor.getColumnIndexOrThrow(Images.Media.TITLE);
+	    	int bucketNameColumn = cursor.getColumnIndexOrThrow(Images.Media.BUCKET_DISPLAY_NAME);
+	    	int bucketIdColumn = cursor.getColumnIndexOrThrow(Images.Media.BUCKET_ID);
+	    	int longitudeColumn = cursor.getColumnIndexOrThrow(Images.Media.LONGITUDE);
+	    	int latitudeColumn = cursor.getColumnIndexOrThrow(Images.Media.LATITUDE);
+	    	int dataColumn = cursor.getColumnIndexOrThrow(Images.Media.DATA);
+	    	
+	    	if (!cursor.moveToFirst()) {
+	    		return null;
+	    	}
+	    	
+	    	do {
+	    		if (cursor.isNull(latitudeColumn) || cursor.isNull(longitudeColumn))
+	    			continue;
+	        	int lat = (int) (cursor.getDouble(latitudeColumn) * 1E6);
+	        	int lon = (int) (cursor.getDouble(longitudeColumn) * 1E6);
+	        	int imageId = cursor.getInt(idColumn);
+	    		/* StringBuilder stuff = new StringBuilder("" + imageId);
+	    		stuff.append(" ").append(cursor.getString(bucketNameColumn));
+	    		stuff.append(" ").append(cursor.getString(bucketIdColumn));
+	    		stuff.append(" ").append(lat);
+	    		stuff.append(" ").append(lon);
+	    		stuff.append(" ").append(cursor.getString(dataColumn));
+	    		Log.d(this.getLocalClassName(), stuff.toString()); */
+	    		
+	    		if (lat == 0.0 || lon == 0.0)
+	    			continue;
+	    		
+	    		// Retrieve thumbnail bitmap from thumbnail content provider
+	    		Cursor thumbCursor = managedQuery(
+	    				 Images.Thumbnails.EXTERNAL_CONTENT_URI,
+	    				 null,
+	    				 Images.Thumbnails.IMAGE_ID + " = " + imageId, 
+						 null, null);
+				if (!thumbCursor.moveToFirst()) {
+					Log.i(this.getClass().toString(), "No data for thumbnail");
+					continue;
+				}
+	    		int thumbIdColumn = thumbCursor.getColumnIndexOrThrow(Images.Thumbnails._ID);
+				Bitmap thumb;
+				try {
+					thumb = Images.Media.getBitmap(
+										getContentResolver(), 
+										Uri.withAppendedPath(
+											Images.Thumbnails.EXTERNAL_CONTENT_URI,
+											thumbCursor.getString(thumbIdColumn)));
+					// TODO: keep aspect ratio
+					thumb = Bitmap.createScaledBitmap(thumb, 50, 50, true);
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+					continue;
+				} catch (IOException e) {
+					e.printStackTrace();
+					continue;
+				}
+	    		
+				// add the thumbnail as the marker
+	        	GeoPoint point = new GeoPoint(lat, lon);
+	        	OverlayItem item = new OverlayItem(point, cursor.getString(titleColumn), "" + imageId);
+	        	item.setMarker(new BitmapDrawable(thumb));
+	        	publishProgress(item);
+	    	} while (cursor.moveToNext());
+	    	
+	    	return null;
     	}
     	
-    	do {
-    		if (cursor.isNull(latitudeColumn) || cursor.isNull(longitudeColumn))
-    			continue;
-        	int lat = (int) (cursor.getDouble(latitudeColumn) * 1E6);
-        	int lon = (int) (cursor.getDouble(longitudeColumn) * 1E6);
-        	int imageId = cursor.getInt(idColumn);
-    		/* StringBuilder stuff = new StringBuilder("" + imageId);
-    		stuff.append(" ").append(cursor.getString(bucketNameColumn));
-    		stuff.append(" ").append(cursor.getString(bucketIdColumn));
-    		stuff.append(" ").append(lat);
-    		stuff.append(" ").append(lon);
-    		stuff.append(" ").append(cursor.getString(dataColumn));
-    		Log.d(this.getLocalClassName(), stuff.toString()); */
-    		
-    		if (lat == 0.0 || lon == 0.0)
-    			continue;
-    		
-    		// Retrieve thumbnail bitmap from thumbnail content provider
-    		Cursor thumbCursor = managedQuery(
-    				 Images.Thumbnails.EXTERNAL_CONTENT_URI,
-    				 null,
-    				 Images.Thumbnails.IMAGE_ID + " = " + imageId, 
-					 null, null);
-			if (!thumbCursor.moveToFirst()) {
-				Log.i(this.getLocalClassName(), "No data for thumbnail");
-				continue;
-			}
-    		int thumbIdColumn = thumbCursor.getColumnIndexOrThrow(Images.Thumbnails._ID);
-			Bitmap thumb;
-			try {
-				thumb = Images.Media.getBitmap(
-									getContentResolver(), 
-									Uri.withAppendedPath(
-										Images.Thumbnails.EXTERNAL_CONTENT_URI,
-										thumbCursor.getString(thumbIdColumn)));
-				// TODO: keep aspect ratio
-				thumb = Bitmap.createScaledBitmap(thumb, 50, 50, true);
-			} catch (FileNotFoundException e) {
-				Toast.makeText(this,
-							   "File not found getting thumbnail",
-							   Toast.LENGTH_SHORT);
-				e.printStackTrace();
-				continue;
-			} catch (IOException e) {
-				Toast.makeText(this,
-						       "I/O Exception getting thumbnail",
-						       Toast.LENGTH_SHORT);
-				e.printStackTrace();
-				continue;
-			}
-    		
-			// add the thumbnail as the marker
-        	GeoPoint point = new GeoPoint(lat, lon);
-        	OverlayItem item = new OverlayItem(point, cursor.getString(titleColumn), "" + imageId);
-        	item.setMarker(new BitmapDrawable(thumb));
-        	mImageOverlay.addOverlay(item);
+    	@Override
+    	protected void onProgressUpdate(OverlayItem... items) {
+    		super.onProgressUpdate(items);
+        	mImageOverlay.addOverlay(items[0]);
         	//mMapView.getController().animateTo(point);
-    	} while (cursor.moveToNext());
+    	}
     	
+    	// TODO: add some sort of progress thing to the titlebar
+    	/* @Override
+    	protected void onPreExecute() {
+    		super.onPreExecute();
+    	}
+    	
+    	@Override
+    	protected void onPostExecute(Long result) {
+    		super.onPostExecute(result);
+    	} */
     }
     
     
