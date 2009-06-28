@@ -305,7 +305,7 @@
      inkscape:cy="232.34576"
      inkscape:window-x="37"
      inkscape:window-y="31"
-     inkscape:current-layer="layer2"
+     inkscape:current-layer="g5383"
      showborder="true"
      showguides="true"
      inkscape:guide-bbox="true" />
@@ -372,14 +372,13 @@
        inkscape:export-xdpi="8.9598312"
        inkscape:export-ydpi="8.9598312" />
     <g
-       style="overflow:visible;display:inline"
-       id="g2800"
-       transform="translate(19.900548,0.2802774)"
-       inkscape:export-filename="globe_frame.png"
-       inkscape:export-xdpi="8.9598312"
-       inkscape:export-ydpi="8.9598312">
+       id="g5383"
+       transform="translate(19.900548,0.2802774)">
       <g
-         id="g5383">
+         id="g3541"
+         inkscape:export-filename="/usr/src/PictureMap/res/drawable/globe_frame.png"
+         inkscape:export-xdpi="9.0299997"
+         inkscape:export-ydpi="9.0299997">
         <rect
            transform="matrix(0.7739602,0,0,0.9839835,50.17179,3.6437651)"
            style="fill:none;fill-opacity:1"
@@ -392,7 +391,7 @@
            clip-path="url(#XMLID_55_)" />
         <line
            transform="matrix(0.7739602,0,0,0.9839835,50.17179,3.6437651)"
-           style="fill:none;fill-opacity:1;stroke:#808080;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1"
+           style="fill:none;fill-opacity:1;stroke:#808080;stroke-width:11.66737737;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1;stroke-dasharray:none"
            id="line2794"
            y2="80.5"
            y1="10.5"
@@ -403,7 +402,7 @@
            clip-path="url(#XMLID_55_)" />
         <line
            transform="matrix(0.7739602,0,0,0.9839835,50.17179,3.6437651)"
-           style="fill:none;fill-opacity:1;stroke:#808080;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1"
+           style="fill:none;fill-opacity:1;stroke:#808080;stroke-width:11.66737737;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1;stroke-dasharray:none"
            id="line2796"
            y2="80.5"
            y1="10.5"
