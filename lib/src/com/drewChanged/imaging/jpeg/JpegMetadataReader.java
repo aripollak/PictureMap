@@ -27,7 +27,7 @@ import com.drewChanged.metadata.jpeg.JpegCommentReader;
 import com.drewChanged.metadata.jpeg.JpegReader;
 //import com.sun.image.codec.jpeg.JPEGDecodeParam;
 
-//import java.io.File;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 //import java.util.Iterator;
@@ -48,11 +48,11 @@ public class JpegMetadataReader
         return extractMetadataFromJpegSegmentReader(segmentReader);
     }
 
-//    public static Metadata readMetadata(File file) throws JpegProcessingException
-//    {
-//        JpegSegmentReader segmentReader = new JpegSegmentReader(file);
-//        return extractMetadataFromJpegSegmentReader(segmentReader);
-//    }
+    public static Metadata readMetadata(File file) throws JpegProcessingException
+    {
+        JpegSegmentReader segmentReader = new JpegSegmentReader(file);
+        return extractMetadataFromJpegSegmentReader(segmentReader);
+    }
 
     public static Metadata extractMetadataFromJpegSegmentReader(JpegSegmentReader segmentReader)
     {

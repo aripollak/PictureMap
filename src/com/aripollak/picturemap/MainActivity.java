@@ -210,7 +210,7 @@ public class MainActivity extends MapActivity {
     		super.onProgressUpdate(items);
         	mImageOverlay.addOverlay(items[0]);
         	//mMapView.getController().animateTo(point);
-        	mMapView.invalidate();
+        	mMapView.invalidate(); // make the map redraw
     	}
     	
     	@Override
@@ -243,12 +243,7 @@ public class MainActivity extends MapActivity {
     		try {
     			// TODO: fix JpegMetadataReader to accept File
     			File file = new File(imageLocation);
-    			FileInputStream is = new FileInputStream(file);
-    			long fileLength = file.length();
-    			byte[] buf = new byte[(int)fileLength];
-    			is.read(buf);
-    			ByteArrayInputStream stream = new ByteArrayInputStream(buf);
-    			Metadata metadata = JpegMetadataReader.readMetadata(stream);
+    			Metadata metadata = JpegMetadataReader.readMetadata(file);
     			Directory gpsDirectory = metadata.getDirectory(GpsDirectory.class);
     			if (!gpsDirectory.containsTag(GpsDirectory.TAG_GPS_LATITUDE))
     				return null;
@@ -290,12 +285,6 @@ public class MainActivity extends MapActivity {
 				e.printStackTrace();
 				return null;
 			} catch (MetadataException e) {
-				e.printStackTrace();
-				return null;
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-				return null;
-			} catch (IOException e) {
 				e.printStackTrace();
 				return null;
 			}

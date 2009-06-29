@@ -34,11 +34,11 @@ public class JpegSegmentReader
     // Jpeg data can be sourced from either a file, byte[] or InputStream
 
     /** Jpeg file */
-//    private final File _file;
+    private final File _file;
     /** Jpeg data as byte array */
     private final byte[] _data;
     /** Jpeg data as an InputStream */
-    private final ByteArrayInputStream _stream;
+    private final BufferedInputStream _stream;
 
     private JpegSegmentData _segmentData;
 
@@ -100,14 +100,14 @@ public class JpegSegmentReader
      * Creates a JpegSegmentReader for a specific file.
      * @param file the Jpeg file to read segments from
      */
-//    public JpegSegmentReader(File file) throws JpegProcessingException
-//    {
-//        _file = file;
-//        _data = null;
-//        _stream = null;
-//
-//        readSegments();
-//    }
+    public JpegSegmentReader(File file) throws JpegProcessingException
+    {
+        _file = file;
+        _data = null;
+        _stream = null;
+
+        readSegments();
+    }
 
     /**
      * Creates a JpegSegmentReader for a byte array.
@@ -115,7 +115,7 @@ public class JpegSegmentReader
      */
     public JpegSegmentReader(byte[] fileContents) throws JpegProcessingException
     {
-//        _file = null;
+        _file = null;
         _data = fileContents;
         _stream = null;
 
@@ -124,8 +124,8 @@ public class JpegSegmentReader
 
     public JpegSegmentReader(InputStream in) throws JpegProcessingException
     {
-        _stream = (ByteArrayInputStream) in;
-//        _file = null;
+        _stream = (BufferedInputStream) in;
+        _file = null;
         _data = null;
         
         readSegments();
@@ -133,7 +133,7 @@ public class JpegSegmentReader
 
     public JpegSegmentReader(JpegSegmentData segmentData)
     {
-//        _file = null;
+        _file = null;
         _data = null;
         _stream = null;
 
@@ -179,7 +179,7 @@ public class JpegSegmentReader
     {
         _segmentData = new JpegSegmentData();
 
-        ByteArrayInputStream inStream = getJpegInputStream();
+        BufferedInputStream inStream = getJpegInputStream();
         try {
             int offset = 0;
 //            System.out.println("at the start of JpegSegmentReader's readSegments: "+inStream.available());
@@ -244,45 +244,44 @@ public class JpegSegmentReader
     }
 
     /**
-     * Private helper method to create a InputStream of Jpeg data from whichever
+     * Private helper method to create a BufferedInputStream of Jpeg data from whichever
      * data source was specified upon construction of this instance.
-     * @return a a InputStream of Jpeg data
+     * @return a a BufferedInputStream of Jpeg data
      * @throws JpegProcessingException for any problems obtaining the stream
      */
-    private ByteArrayInputStream getJpegInputStream() throws JpegProcessingException
+    private BufferedInputStream getJpegInputStream() throws JpegProcessingException
     {
         if (_stream!=null) {
-            if (_stream instanceof ByteArrayInputStream) {
-                return (ByteArrayInputStream) _stream;
-//            } else {
-//                return new InputStream(_stream);
+            if (_stream instanceof BufferedInputStream) {
+                return (BufferedInputStream) _stream;
+            } else {
+                return new BufferedInputStream(_stream);
             }
-        } 
-//        InputStream inputStream;
-//        if (_data == null) {
-//            try {
-//                inputStream = new FileInputStream(_file);
-//            } catch (FileNotFoundException e) {
-//                throw new JpegProcessingException("Jpeg file does not exist", e);
-//            }
-//        } else {
-//            inputStream = new ByteArrayInputStream(_data);
-//        }
-//        return new InputStream(inputStream);
-		return _stream;
+        }
+        InputStream inputStream;
+        if (_data == null) {
+            try {
+                inputStream = new FileInputStream(_file);
+            } catch (FileNotFoundException e) {
+                throw new JpegProcessingException("Jpeg file does not exist", e);
+            }
+        } else {
+            inputStream = new ByteArrayInputStream(_data);
+        }
+        return new BufferedInputStream(inputStream);
     }
 
     /**
      * Helper method that validates the Jpeg file's magic number.
-     * @param fileStream the InputStream to read bytes from, which must be positioned
+     * @param inStream the InputStream to read bytes from, which must be positioned
      *        at its start (i.e. no bytes read yet)
      * @return true if the magic number is Jpeg (0xFFD8)
      * @throws IOException for any problem in reading the file
      */
-    private boolean isValidJpegHeaderBytes(ByteArrayInputStream fileStream) throws IOException
+    private boolean isValidJpegHeaderBytes(BufferedInputStream inStream) throws IOException
     {
         byte[] header = new byte[2];
-        fileStream.read(header, 0, 2);
+        inStream.read(header, 0, 2);
 //        System.out.println("header[0]: "+ (header[0] & 0xFF));
 //        System.out.println("header[1]: "+ (header[1] & 0xFF));
         return (header[0] & 0xFF) == 0xFF && (header[1] & 0xFF) == 0xD8;
