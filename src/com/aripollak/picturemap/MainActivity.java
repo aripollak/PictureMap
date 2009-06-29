@@ -18,13 +18,13 @@
 
 package com.aripollak.picturemap;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import android.content.Intent;
@@ -43,6 +43,13 @@ import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 
+import com.drewChanged.imaging.jpeg.JpegMetadataReader;
+import com.drewChanged.imaging.jpeg.JpegProcessingException;
+import com.drewChanged.lang.Rational;
+import com.drewChanged.metadata.Directory;
+import com.drewChanged.metadata.Metadata;
+import com.drewChanged.metadata.MetadataException;
+import com.drewChanged.metadata.exif.GpsDirectory;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapActivity;
@@ -202,6 +209,7 @@ public class MainActivity extends MapActivity {
     		super.onProgressUpdate(items);
         	mImageOverlay.addOverlay(items[0]);
         	//mMapView.getController().animateTo(point);
+        	//mMapView.refreshDrawableState();
     	}
     	   	
     	@Override
@@ -212,78 +220,77 @@ public class MainActivity extends MapActivity {
     	
     	/** Try to read the specified image and get a Point from the 
     	 *  location info inside.
-    	 *  NOTE: Currently only supports images created by
-    	 *  the Android camera.
     	 *  @param imageLocation path to image on filesystem
     	 *  @return null if we couldn't get a proper location
     	 */
     	private GeoPoint getGPSInfo(String imageLocation) {
+    		if (!(imageLocation.toLowerCase().endsWith(".jpg") || 
+    				imageLocation.toLowerCase().endsWith(".jpeg"))) {
+    			return null;
+    		}
+    		
     		int latE6 = 0;
     		int lonE6 = 0;
+    		
     		try {
-    			final byte[] GPSVerInfo = new byte[] {2, 2, 0, 0};
-    			byte temp[] = new byte[4];
-				ByteBuffer buffer = ByteBuffer.wrap(temp);
+    			// TODO: fix JpegMetadataReader to accept File
+    			File file = new File(imageLocation);
+    			FileInputStream is = new FileInputStream(file);
+    			long fileLength = file.length();
+    			byte[] buf = new byte[(int)fileLength];
+    			is.read(buf);
+    			ByteArrayInputStream stream = new ByteArrayInputStream(buf);
+    			Metadata metadata = JpegMetadataReader.readMetadata(stream);
+    			Directory gpsDirectory = metadata.getDirectory(GpsDirectory.class);
+    			if (!gpsDirectory.containsTag(GpsDirectory.TAG_GPS_LATITUDE))
+    				return null;
+    			
+    			Rational[] temp;
     			char reference;
     			int degrees;
-    			int minutes;
+    			float minutes;
     			float seconds;
-				FileInputStream stream = new FileInputStream(imageLocation);
-				FileChannel channel = stream.getChannel();
-				// Check GPS version ID
-				channel.read(buffer, 0x218);
-				if(!Arrays.equals(temp, GPSVerInfo)) {
-					return null;
-				}
-				
+    			
 				// Read latitude reference (N or S)
-				buffer.rewind();
-				channel.read(buffer, 0x224);
-				reference = (char) temp[0];
-				if (reference != 'N' && reference != 'S') {
+    			reference = (char) gpsDirectory.getInt(GpsDirectory.TAG_GPS_LATITUDE_REF);
+    			if (reference != 'N' && reference != 'S') {
 					return null;
 				}
 				// Read latitude
-				buffer.rewind();
-				channel.read(buffer, 0x2c4);
-				degrees = buffer.getInt(0);
-				buffer.rewind();
-				channel.read(buffer, 0x2cc);
-				minutes = buffer.getInt(0);
-				buffer.rewind();
-				channel.read(buffer, 0x2d4);
-				seconds = buffer.getInt(0) / 100f;
+				temp = gpsDirectory.getRationalArray(GpsDirectory.TAG_GPS_LATITUDE);
+				degrees = temp[0].intValue();
+				minutes = temp[1].floatValue();
+				seconds = temp[2].floatValue();
 				latE6 = degrees * (int)1E6;
 				latE6 += (((minutes * 60.0) + seconds) / 3600f) * 1E6;
 				latE6 *= (reference == 'N') ? 1 : -1;
 				
 				// Read longitude reference (W or E)
-				buffer.rewind();
-				channel.read(buffer, 0x23c);
-				reference = (char) temp[0];
+    			reference = (char) gpsDirectory.getInt(GpsDirectory.TAG_GPS_LONGITUDE_REF);
 				if (reference != 'E' && reference != 'W') {
 					return null;
 				}
 				// Read latitude
-				buffer.rewind();
-				channel.read(buffer, 0x2dc);
-				degrees = buffer.getInt(0);
-				buffer.rewind();
-				channel.read(buffer, 0x2e4);
-				minutes = buffer.getInt(0);
-				buffer.rewind();
-				channel.read(buffer, 0x2ec);
-				seconds = buffer.getInt(0) / 100f;
+				temp = gpsDirectory.getRationalArray(GpsDirectory.TAG_GPS_LONGITUDE);
+				degrees = temp[0].intValue();
+				minutes = temp[1].floatValue();
+				seconds = temp[2].floatValue();
 				lonE6 = degrees * (int)1E6;
 				lonE6 += (((minutes * 60.0) + seconds) / 3600f) * 1E6;
 				lonE6 *= (reference == 'E') ? 1 : -1;
+			} catch (JpegProcessingException e) {
+				e.printStackTrace();
+				return null;
+			} catch (MetadataException e) {
+				e.printStackTrace();
+				return null;
 			} catch (FileNotFoundException e) {
+				e.printStackTrace();
 				return null;
 			} catch (IOException e) {
 				e.printStackTrace();
 				return null;
 			}
-			
     		return new GeoPoint(latE6, lonE6);
     	}
     }
