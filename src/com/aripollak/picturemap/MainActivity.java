@@ -204,14 +204,22 @@ public class MainActivity extends MapActivity {
 	    	return null;
     	}
     	
+    	
     	@Override
     	protected void onProgressUpdate(OverlayItem... items) {
     		super.onProgressUpdate(items);
         	mImageOverlay.addOverlay(items[0]);
         	//mMapView.getController().animateTo(point);
-        	//mMapView.refreshDrawableState();
+        	mMapView.invalidate();
     	}
-    	   	
+    	
+    	@Override
+    	protected void onPreExecute() {
+    		super.onPreExecute();
+    		setProgressBarIndeterminateVisibility(true);
+    		
+    	}
+    	
     	@Override
     	protected void onPostExecute(Long result) {
     		super.onPostExecute(result);
