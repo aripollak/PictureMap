@@ -25,6 +25,7 @@ import com.drewChanged.metadata.MetadataException;
  * unexpected data conditions.
  * @author  Drew Noakes http://drewnoakes.com
  */
+@SuppressWarnings("serial")
 public class ExifProcessingException extends MetadataException
 {
     /**

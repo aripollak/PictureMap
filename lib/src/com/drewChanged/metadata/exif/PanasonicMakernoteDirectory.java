@@ -23,6 +23,7 @@ import java.util.Hashtable;
 /**
  *
  */
+@SuppressWarnings("unchecked")
 public class PanasonicMakernoteDirectory extends Directory
 {
     public static final int TAG_PANASONIC_QUALITY_MODE = 0x0001;

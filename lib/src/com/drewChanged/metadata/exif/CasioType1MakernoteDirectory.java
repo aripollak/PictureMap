@@ -24,6 +24,7 @@ import java.util.Hashtable;
  * A standard TIFF IFD directory but always uses Motorola (Big-Endian) Byte Alignment.
  * Makernote data begins immediately (no header).
  */
+@SuppressWarnings("unchecked")
 public class CasioType1MakernoteDirectory extends Directory
 {
     public static final int TAG_CASIO_RECORDING_MODE = 0x0001;

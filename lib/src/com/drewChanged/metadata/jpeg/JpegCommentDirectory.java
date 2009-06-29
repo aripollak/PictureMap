@@ -24,6 +24,7 @@ import java.util.Hashtable;
  *
  * @author Drew Noakes http://drewnoakes.com
  */
+@SuppressWarnings("unchecked")
 public class JpegCommentDirectory extends Directory {
 
 	/** This is in bits/sample, usually 8 (12 and 16 not supported by most software). */

@@ -23,6 +23,7 @@ import java.util.Hashtable;
 /**
  *
  */
+@SuppressWarnings("unchecked")
 public class KyoceraMakernoteDirectory extends Directory
 {
     public static final int TAG_KYOCERA_PROPRIETARY_THUMBNAIL = 0x0001;

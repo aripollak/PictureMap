@@ -27,6 +27,7 @@ import java.util.Hashtable;
  *
  * Many tag definitions explained here: http://www.ozhiker.com/electronics/pjmt/jpeg_info/canon_mn.html
  */
+@SuppressWarnings("unchecked")
 public class CanonMakernoteDirectory extends Directory
 {
     // CANON cameras have some funny bespoke fields that need further processing...

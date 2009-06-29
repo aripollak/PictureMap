@@ -23,6 +23,7 @@ import java.util.Hashtable;
 /**
  * Directory for metadata specific to Pentax and Asahi cameras.
  */
+@SuppressWarnings("unchecked")
 public class PentaxMakernoteDirectory extends Directory
 {
     /**

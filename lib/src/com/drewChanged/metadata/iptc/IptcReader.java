@@ -30,6 +30,7 @@ import java.util.Date;
 /**
  *
  */
+@SuppressWarnings("unused")
 public class IptcReader implements MetadataReader
 {
 /*
@@ -179,7 +180,7 @@ public class IptcReader implements MetadataReader
                     String dateStr = new String(_data, offset, tagByteCount);
                     try {
                         int year = Integer.parseInt(dateStr.substring(0, 4));
-                        int month = Integer.parseInt(dateStr.substring(4, 6)) - 1;
+						int month = Integer.parseInt(dateStr.substring(4, 6)) - 1;
                         int day = Integer.parseInt(dateStr.substring(6, 8));
 //                        Date date = (new Date( (year, month, day)).getTime();
 //                        directory.setDate(tagIdentifier, date);

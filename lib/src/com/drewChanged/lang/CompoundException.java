@@ -21,6 +21,7 @@ package com.drewChanged.lang;
  * unavailable in previous versions.  This class allows support
  * of these previous JDK versions.
  */
+@SuppressWarnings("serial")
 public class CompoundException extends Exception
 {
     private final Throwable _innnerException;

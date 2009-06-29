@@ -23,6 +23,7 @@ import java.util.Hashtable;
 /**
  *
  */
+@SuppressWarnings("unchecked")
 public class IptcDirectory extends Directory
 {
     public static final int TAG_RECORD_VERSION = 0x0200;

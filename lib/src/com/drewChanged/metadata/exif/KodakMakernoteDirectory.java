@@ -21,6 +21,7 @@ import java.util.Hashtable;
 /**
  * Describes tags specific to Kodak cameras.
  */
+@SuppressWarnings("unchecked")
 public class KodakMakernoteDirectory extends Directory
 {
 	protected static final Hashtable _tagNameMap = new Hashtable();

@@ -24,6 +24,7 @@ import java.util.Hashtable;
  * The Olympus makernote is used by many manufacturers, and as such contains some tags that appear specific to
  * those manufacturers.  Other users include Konica, Minolta and Epson. 
  */
+@SuppressWarnings("unchecked")
 public class OlympusMakernoteDirectory extends Directory
 {
     /**

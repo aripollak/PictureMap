@@ -39,6 +39,7 @@ import java.util.Hashtable;
  * later models, the IFD was given the standard prefix to indicate the camera models (most other manufacturers also
  * provide this prefix to aid in software decoding).
  */
+@SuppressWarnings("unchecked")
 public class NikonType2MakernoteDirectory extends Directory
 {
     /**
@@ -149,7 +150,7 @@ public class NikonType2MakernoteDirectory extends Directory
 
     /**
      * Values observed
-     * - î
+     * - ï¿½
      * - 0,1,c,0 (hex)
      */
     public static final int TAG_NIKON_TYPE2_UNKNOWN_2 = 0x000E;
@@ -357,7 +358,7 @@ public class NikonType2MakernoteDirectory extends Directory
      * Values observed
      * - 0100fht@7b,4x,D"Y
      * - 01015
-     * - 0100w\cH+D$$h$î5Q (D1X)
+     * - 0100w\cH+D$$h$ï¿½5Q (D1X)
      * - 30,31,30,30,0,0,b,48,7c,7c,24,24,5,15,24,0,0,0,0,0 (hex) (D100)
      */
     public static final int TAG_NIKON_TYPE2_UNKNOWN_13 = 0x0098;

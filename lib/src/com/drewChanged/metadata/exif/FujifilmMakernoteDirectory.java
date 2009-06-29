@@ -23,6 +23,7 @@ import java.util.Hashtable;
 /**
  *
  */
+@SuppressWarnings("unchecked")
 public class FujifilmMakernoteDirectory extends Directory
 {
     public static final int TAG_FUJIFILM_MAKERNOTE_VERSION = 0x0000;

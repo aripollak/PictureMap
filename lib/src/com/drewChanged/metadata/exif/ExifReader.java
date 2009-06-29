@@ -62,6 +62,7 @@ import java.util.Hashtable;
  * an <code>Metadata</code> object.
  * @author  Drew Noakes http://drewnoakes.com
  */
+@SuppressWarnings("unchecked")
 public class ExifReader implements MetadataReader
 {
     /**
@@ -163,10 +164,10 @@ public class ExifReader implements MetadataReader
      * Performs the Exif data extraction, adding found values to the specified
      * instance of <code>Metadata</code>.
      */
-    public Metadata extract(Metadata metadata)
+	public Metadata extract(Metadata metadata)
     {
         _metadata = metadata;
-        if (_data==null) System.out.println("Bloody _data is null!");
+//        if (_data==null) System.out.println("Bloody _data is null!");
         if (_data==null)
             return _metadata;
 
@@ -175,51 +176,51 @@ public class ExifReader implements MetadataReader
 
         // check for the header length
         if (_data.length<=14) {
-//            directory.addError("Exif data segment must contain at least 14 bytes");
-            System.out.println("Exif data segment must contain at least 14 bytes");
+            directory.addError("Exif data segment must contain at least 14 bytes");
+//            System.out.println("Exif data segment must contain at least 14 bytes");
             return _metadata;
         }
 
         // check for the header preamble
         if (!"Exif\0\0".equals(new String(_data, 0, 6))) {
-//            directory.addError("Exif data segment doesn't begin with 'Exif'");
-            System.out.println("Exif data segment doesn't begin with 'Exif'");
+            directory.addError("Exif data segment doesn't begin with 'Exif'");
+//            System.out.println("Exif data segment doesn't begin with 'Exif'");
             return _metadata;
         }
 
         // this should be either "MM" or "II"
         String byteOrderIdentifier = new String(_data, 6, 2);
         if (!setByteOrder(byteOrderIdentifier)) {
-//            directory.addError("Unclear distinction between Motorola/Intel byte ordering: " + byteOrderIdentifier);
-            System.out.println("Exif data segment doesn't begin with 'Exif'");
+            directory.addError("Unclear distinction between Motorola/Intel byte ordering: " + byteOrderIdentifier);
+//            System.out.println("Exif data segment doesn't begin with 'Exif'");
             return _metadata;
         }
 
         // Check the next two values for correctness.
         if (get16Bits(8)!=0x2a) {
-//            directory.addError("Invalid Exif start - should have 0x2A at offset 8 in Exif header");
-            System.out.println("Invalid Exif start - should have 0x2A at offset 8 in Exif header");
+            directory.addError("Invalid Exif start - should have 0x2A at offset 8 in Exif header");
+//            System.out.println("Invalid Exif start - should have 0x2A at offset 8 in Exif header");
             return _metadata;
         }
 
         int firstDirectoryOffset = get32Bits(10) + TIFF_HEADER_START_OFFSET;
-        System.out.println("PP 1");
+//        System.out.println("PP 1");
         // David Ekholm sent an digital camera image that has this problem
         if (firstDirectoryOffset>=_data.length - 1) {
-//            directory.addError("First exif directory offset is beyond end of Exif data segment");
-            System.out.println("First exif directory offset is beyond end of Exif data segment");
+            directory.addError("First exif directory offset is beyond end of Exif data segment");
+//            System.out.println("First exif directory offset is beyond end of Exif data segment");
             // First directory normally starts 14 bytes in -- try it here and catch another error in the worst case
             firstDirectoryOffset = 14;
         }
-        System.out.println("PP 2");
+//        System.out.println("PP 2");
         Hashtable processedDirectoryOffsets = new Hashtable();
 
         // 0th IFD (we merge with Exif IFD)
         processDirectory(directory, processedDirectoryOffsets, firstDirectoryOffset, TIFF_HEADER_START_OFFSET);
-        System.out.println("PP 3");
+//        System.out.println("PP 3");
         // after the extraction process, if we have the correct tags, we may be able to store thumbnail information
         storeThumbnailBytes(directory, TIFF_HEADER_START_OFFSET);
-        System.out.println("PP 4");
+//        System.out.println("PP 4");
         return _metadata;
     }
 
@@ -241,8 +242,8 @@ public class ExifReader implements MetadataReader
             }
             exifDirectory.setByteArray(ExifDirectory.TAG_THUMBNAIL_DATA, result);
         } catch (Throwable e) {
-//            exifDirectory.addError("Unable to extract thumbnail: " + e.getMessage());
-            System.out.println("Unable to extract thumbnail: " + e.getMessage());
+            exifDirectory.addError("Unable to extract thumbnail: " + e.getMessage());
+//            System.out.println("Unable to extract thumbnail: " + e.getMessage());
         }
     }
 
@@ -276,14 +277,14 @@ public class ExifReader implements MetadataReader
         processedDirectoryOffsets.put(new Integer(dirStartOffset), "processed");
 
         if (dirStartOffset>=_data.length || dirStartOffset<0) {
-//            directory.addError("Ignored directory marked to start outside data segement");
-            System.out.println("Ignored directory marked to start outside data segement");
+            directory.addError("Ignored directory marked to start outside data segement");
+//            System.out.println("Ignored directory marked to start outside data segement");
             return;
         }
 
         if (!isDirectoryLengthValid(dirStartOffset, tiffHeaderOffset)) {
-//            directory.addError("Illegally sized directory");
-            System.out.println("Illegally sized directory");
+            directory.addError("Illegally sized directory");
+//            System.out.println("Illegally sized directory");
             return;
         }
 
@@ -301,24 +302,24 @@ public class ExifReader implements MetadataReader
             // 2 bytes for the format code
             final int formatCode = get16Bits(tagOffset + 2);
             if (formatCode<1 || formatCode>MAX_FORMAT_CODE) {
-//                directory.addError("Invalid format code: " + formatCode);
-                System.out.println("Invalid format code: " + formatCode);
+                directory.addError("Invalid format code: " + formatCode);
+//                System.out.println("Invalid format code: " + formatCode);
                 continue;
             }
 
             // 4 bytes dictate the number of components in this tag's data
             final int componentCount = get32Bits(tagOffset + 4);
             if (componentCount<0) {
-//                directory.addError("Negative component count in EXIF");
-                System.out.println("Negative component count in EXIF");
+                directory.addError("Negative component count in EXIF");
+//                System.out.println("Negative component count in EXIF");
                 continue;
             }
             // each component may have more than one byte... calculate the total number of bytes
             final int byteCount = componentCount * BYTES_PER_FORMAT[formatCode];
             final int tagValueOffset = calculateTagValueOffset(byteCount, tagOffset, tiffHeaderOffset);
             if (tagValueOffset<0 || tagValueOffset > _data.length) {
-//                directory.addError("Illegal pointer offset value in EXIF");
-                System.out.println("Illegal pointer offset value in EXIF");
+                directory.addError("Illegal pointer offset value in EXIF");
+//                System.out.println("Illegal pointer offset value in EXIF");
                 continue;
             }
 
@@ -326,8 +327,8 @@ public class ExifReader implements MetadataReader
             // This addresses an uncommon OutOfMemoryError.
             if (byteCount < 0 || tagValueOffset + byteCount > _data.length)
             {
-//                directory.addError("Illegal number of bytes: " + byteCount);
-                System.out.println("Illegal number of bytes: " + byteCount);
+                directory.addError("Illegal number of bytes: " + byteCount);
+//                System.out.println("Illegal number of bytes: " + byteCount);
                 continue;
             }
 
@@ -412,7 +413,7 @@ public class ExifReader implements MetadataReader
                     processDirectory(_metadata.getDirectory(NikonType2MakernoteDirectory.class), processedDirectoryOffsets, subdirOffset + 18, subdirOffset + 10);
                 else {
 //                    exifDirectory.addError("Unsupported makernote data ignored.");
-                    System.out.println("Unsupported makernote data ignored.");
+//                    System.out.println("Unsupported makernote data ignored.");
                 }
             }
             else
@@ -464,8 +465,8 @@ public class ExifReader implements MetadataReader
             // This Konica data is not understood.  Header identified in accordance with information at this site:
             // http://www.ozhiker.com/electronics/pjmt/jpeg_info/minolta_mn.html
             // TODO determine how to process the information described at the above website
-//            exifDirectory.addError("Unsupported Konica/Minolta data ignored.");
-            System.out.println("Unsupported Konica/Minolta data ignored.");
+            exifDirectory.addError("Unsupported Konica/Minolta data ignored.");
+//            System.out.println("Unsupported Konica/Minolta data ignored.");
         }
         else if ("KYOCERA".equals(firstSevenChars))
         {
@@ -502,8 +503,8 @@ public class ExifReader implements MetadataReader
         {
             // TODO how to store makernote data when it's not from a supported camera model?
             // this is difficult as the starting offset is not known.  we could look for it...
-//            exifDirectory.addError("Unsupported makernote data ignored.");
-            System.out.println("Unsupported makernote data ignored.");
+            exifDirectory.addError("Unsupported makernote data ignored.");
+//            System.out.println("Unsupported makernote data ignored.");
         }
     }
 
@@ -523,7 +524,7 @@ public class ExifReader implements MetadataReader
         // Directory simply stores raw values
         // The display side uses a Descriptor class per directory to turn the raw values into 'pretty' descriptions
     	
-    	System.out.println("Inside processTag");
+//    	System.out.println("Inside processTag");
         switch (formatCode)
         {
             case FMT_UNDEFINED:
@@ -599,8 +600,8 @@ public class ExifReader implements MetadataReader
                 }
                 break;
             default:
-                // directory.addError("Unknown format code " + formatCode + " for tag " + tagType);
-                System.out.println("Unknown format code " + formatCode + " for tag " + tagType);
+                directory.addError("Unknown format code " + formatCode + " for tag " + tagType);
+//                System.out.println("Unknown format code " + formatCode + " for tag " + tagType);
         }
     }
 

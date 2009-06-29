@@ -182,7 +182,7 @@ public class JpegSegmentReader
         ByteArrayInputStream inStream = getJpegInputStream();
         try {
             int offset = 0;
-            System.out.println("at the start of JpegSegmentReader's readSegments: "+inStream.available());
+//            System.out.println("at the start of JpegSegmentReader's readSegments: "+inStream.available());
             // first two bytes should be jpeg magic number
             if (!isValidJpegHeaderBytes(inStream)) {
                 throw new JpegProcessingException("not a jpeg file");
@@ -283,8 +283,8 @@ public class JpegSegmentReader
     {
         byte[] header = new byte[2];
         fileStream.read(header, 0, 2);
-        System.out.println("header[0]: "+ (header[0] & 0xFF));
-        System.out.println("header[1]: "+ (header[1] & 0xFF));
+//        System.out.println("header[0]: "+ (header[0] & 0xFF));
+//        System.out.println("header[1]: "+ (header[1] & 0xFF));
         return (header[0] & 0xFF) == 0xFF && (header[1] & 0xFF) == 0xD8;
     }
 }

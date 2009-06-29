@@ -37,12 +37,13 @@ import java.util.Hashtable;
  * values and support for retrieving them.
  * @author  Drew Noakes http://drewnoakes.com
  */
+@SuppressWarnings("unchecked")
 public final class Metadata 
 {
     /**
      *
      */
-    private final Hashtable directoryMap;
+	private final Hashtable directoryMap;
 
     /**
      * List of Directory objects set against this object.  Keeping a list handy makes
@@ -101,7 +102,7 @@ public final class Metadata
         }
         // check if we've already issued this type of directory
         if (directoryMap.containsKey(type)) {
-        	System.out.println("obtain dir from directoryMap");
+//        	System.out.println("obtain dir from directoryMap");
             return (Directory)directoryMap.get(type);
         }
         Object directory;
@@ -111,7 +112,7 @@ public final class Metadata
             throw new RuntimeException("Cannot instantiate provided Directory type: " + type.toString());
         }
         // store the directory in case it's requested later
-        System.out.println("put new dir into directoryMap!");
+//        System.out.println("put new dir into directoryMap!");
         directoryMap.put(type, directory);
         directoryList.addElement(directory);
         return (Directory)directory;

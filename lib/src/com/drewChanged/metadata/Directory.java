@@ -20,10 +20,10 @@ import com.drewChanged.lang.Rational;
 
 //import java.lang.reflect.Array;
 //import java.text.DateFormat;
-//import java.util.ArrayList;
+import java.util.ArrayList;
 //import java.util.HashMap;
 import java.util.Hashtable;
-//import java.util.Iterator;
+import java.util.Iterator;
 //import java.util.List;
 import java.util.Vector;
 
@@ -31,12 +31,13 @@ import java.util.Vector;
  * Base class for all Metadata directory types with supporting methods for setting and
  * getting tag values.
  */
+@SuppressWarnings(value={"unchecked", "unused"})
 public abstract class Directory 
 {
     /**
      * Map of values hashed by type identifiers.
      */
-    protected final Hashtable _tagMap;
+	protected final Hashtable _tagMap;
 
     /**
      * The descriptor used to interperet tag values.
@@ -50,7 +51,7 @@ public abstract class Directory
      */
     protected final Vector _definedTagList;
 
-    private Vector _errorList;
+	private ArrayList _errorList;
 
 // ABSTRACT METHODS
 
@@ -118,29 +119,29 @@ public abstract class Directory
         }
         _descriptor = descriptor;
     }
-//
-//    public void addError(String message)
-//    {
-//        if (_errorList==null) {
-//            _errorList = new ArrayList();
-//        }
-//        _errorList.add(message);
-//    }
-//
-//    public boolean hasErrors()
-//    {
-//        return (_errorList!=null && _errorList.size()>0);
-//    }
-//
-//    public Iterator getErrors()
-//    {
-//        return _errorList.iterator();
-//    }
-//
-//    public int getErrorCount()
-//    {
-//        return _errorList.size();
-//    }
+
+    public void addError(String message)
+    {
+        if (_errorList==null) {
+            _errorList = new ArrayList();
+        }
+        _errorList.add(message);
+    }
+
+    public boolean hasErrors()
+    {
+        return (_errorList!=null && _errorList.size()>0);
+    }
+
+    public Iterator getErrors()
+    {
+        return _errorList.iterator();
+    }
+
+    public int getErrorCount()
+    {
+        return _errorList.size();
+    }
 
 // TAG SETTERS
 
@@ -276,13 +277,14 @@ public abstract class Directory
         if (value==null) {
             throw new NullPointerException("cannot set a null object");
         }
-        System.out.println("setting tagType "+tagType+" with: "+value);
+//        System.out.println("setting tagType "+tagType+" with: "+value);
         Integer key = new Integer(tagType);
         if (!_tagMap.containsKey(key)) {
-        	System.out.println("adding into tagMap, tagType "+tagType);
+//        	System.out.println("adding into tagMap, tagType "+tagType);
             _definedTagList.addElement(new Tag(tagType, this));
-        } else 
-        	System.out.println("key "+ tagType +"is  found in the tagMap! ");
+        } else {
+//        	System.out.println("key "+ tagType +"is  found in the tagMap! ");
+        }
         _tagMap.put(key, value);
     }
 
@@ -616,19 +618,19 @@ public abstract class Directory
      */
     public String getString(int tagType)
     {
-    	System.out.println("in Directory.getString("+ tagType  +")");
+//    	System.out.println("in Directory.getString("+ tagType  +")");
         Object o = getObject(tagType);
         if (o==null) {
-        	System.out.println("Object retrieved is null");
+//        	System.out.println("Object retrieved is null");
             return null;
         }
         if (o instanceof Rational) {
-        	System.out.println("Object retrieved is Rational");
+//        	System.out.println("Object retrieved is Rational");
             return ((Rational)o).toSimpleString(true);
         }
         if (o.getClass().isArray())
         {
-        	System.out.println("Object retrieved is Array");
+//        	System.out.println("Object retrieved is Array");
             // handle arrays of objects and primitives
 //            int arrayLength = Array.getLength(o);
         	int arrayLength = ((Vector) o).size();
@@ -659,7 +661,7 @@ public abstract class Directory
      */
     public Object getObject(int tagType)
     {
-    	System.out.println("trying to retrieve "+tagType);
+//   	System.out.println("trying to retrieve "+tagType);
         return _tagMap.get(new Integer(tagType));
     }
 

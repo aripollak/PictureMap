@@ -23,6 +23,7 @@ import java.util.Hashtable;
 /**
  *
  */
+@SuppressWarnings("unchecked")
 public class ExifInteropDirectory extends Directory
 {
     public static final int TAG_INTEROP_INDEX = 0x0001;

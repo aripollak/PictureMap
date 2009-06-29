@@ -24,12 +24,13 @@ import java.util.Vector;
  * within the Jpeg.  For example, it may be convenient to port about only the non-image
  * segments when analysing (or serializing) metadata.
  */
+@SuppressWarnings("unchecked")
 public class JpegSegmentData 
 {
     static final long serialVersionUID = 7110175216435025451L;
     
     /** A map of byte[], keyed by the segment marker */
-    private final Hashtable _segmentDataMap;
+	private final Hashtable _segmentDataMap;
 
     public JpegSegmentData()
     {
@@ -50,8 +51,8 @@ public class JpegSegmentData
     public byte[] getSegment(byte segmentMarker, int occurrence)
     {
         final Vector segmentList = getSegmentList(segmentMarker);
-        if (segmentList!=null) System.out.println("segmentList size: "+segmentList.size());
-        else System.out.println("segmentList size is null");
+//        if (segmentList!=null) System.out.println("segmentList size: "+segmentList.size());
+//        else System.out.println("segmentList size is null");
         if (segmentList==null || segmentList.size()<=occurrence)
             return null;
         else

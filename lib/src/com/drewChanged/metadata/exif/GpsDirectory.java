@@ -23,6 +23,7 @@ import java.util.Hashtable;
 /**
  *
  */
+@SuppressWarnings("unchecked")
 public class GpsDirectory extends Directory
 {
     /** GPS tag version GPSVersionID 0 0 BYTE 4 */

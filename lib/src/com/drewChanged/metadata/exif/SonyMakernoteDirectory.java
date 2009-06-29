@@ -21,6 +21,7 @@ import java.util.Hashtable;
 /**
  * Describes tags specific to Sony cameras.
  */
+@SuppressWarnings("unchecked")
 public class SonyMakernoteDirectory extends Directory
 {
 	protected static final Hashtable _tagNameMap = new Hashtable();

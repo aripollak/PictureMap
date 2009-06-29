@@ -77,7 +77,7 @@ public class JpegReader implements MetadataReader
         }
 
         JpegDirectory directory = (JpegDirectory)metadata.getDirectory(JpegDirectory.class);
-        System.out.println("directory is obtained! "+directory.getName());
+//        System.out.println("directory is obtained! "+directory.getName());
         try {
             // data precision
             int dataPrecision = get16Bits(JpegDirectory.TAG_JPEG_DATA_PRECISION);
@@ -107,11 +107,11 @@ public class JpegReader implements MetadataReader
                 int quantizationTableNumber = get16Bits(offset++);
                 JpegComponent component = new JpegComponent(componentId, samplingFactorByte, quantizationTableNumber);
                 directory.setObject(JpegDirectory.TAG_JPEG_COMPONENT_DATA_1 + i, component);
-                System.out.println("Just set object JpegComponent: "+componentId +"," +samplingFactorByte+"," +quantizationTableNumber);
+//                System.out.println("Just set object JpegComponent: "+componentId +"," +samplingFactorByte+"," +quantizationTableNumber);
             }
 
         } catch (MetadataException me) {
-            System.out.println("MetadataException: " + me);
+//            System.out.println("MetadataException: " + me);
         }
 
         return metadata;

@@ -28,6 +28,7 @@ import java.util.Hashtable;
 /**
  *
  */
+@SuppressWarnings("unchecked")
 public class ExifDirectory extends Directory
 {
     // TODO do these tags belong in the exif directory?

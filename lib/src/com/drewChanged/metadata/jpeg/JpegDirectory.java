@@ -25,6 +25,7 @@ import java.util.Hashtable;
  * Directory of tags and values for the SOF0 Jpeg segment.  This segment holds basic metadata about the image.
  * @author Darrell Silver http://www.darrellsilver.com and Drew Noakes
  */
+@SuppressWarnings("unchecked")
 public class JpegDirectory extends Directory {
 
 	/** This is in bits/sample, usually 8 (12 and 16 not supported by most software). */
