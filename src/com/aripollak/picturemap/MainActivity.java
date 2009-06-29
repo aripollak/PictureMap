@@ -133,15 +133,17 @@ public class MainActivity extends MapActivity {
     
 
     /** Populate the map overlay with all the images we find */ 
-    // TODO: Attach to media scanner to redo map if card is re-inserted
-    // TODO: let people search for stuff by date/picture
+    // TODO: put more recent images on top
     // TODO: Implement an intent to get called from Share in the gallery?
+    // TODO: Attach to media scanner to redo map if card is re-inserted?
+    // TODO: cache thumbnails and locations
+    // TODO: let people search for stuff by date/picture
     private class PopulateMapTask extends AsyncTask<Uri, OverlayItem, Long> {
     	@Override
 		protected Long doInBackground(Uri... uris) {
-	    	// Get the last 100 images from the external image store
+	    	// Get the last 200 images from the external image store
 	    	Cursor cursor = managedQuery(Images.Media.EXTERNAL_CONTENT_URI, null, 
-	    								 null, null, Images.Media.DATE_TAKEN + " DESC LIMIT 100");
+	    								 null, null, Images.Media.DATE_MODIFIED + " DESC LIMIT 200");
 	    	if (cursor == null)
 	    		return null;
 	    	int idColumn = cursor.getColumnIndexOrThrow(Images.Media._ID);
