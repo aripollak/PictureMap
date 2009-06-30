@@ -18,13 +18,10 @@
 
 package com.aripollak.picturemap;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import android.content.Intent;
@@ -60,7 +57,7 @@ import com.google.android.maps.OverlayItem;
 
 
 public class MainActivity extends MapActivity {
-	
+	private static final String TAG = "PictureMap";
 	MapView mMapView;
 	View mPopup;
 	List<Overlay> mMapOverlays;
@@ -94,7 +91,6 @@ public class MainActivity extends MapActivity {
 		Button openImageButton = (Button) findViewById(R.id.viewButton);
 		openImageButton.setOnClickListener(mViewImageListener);
 		
-
         mMapOverlays = mMapView.getOverlays();
         mDrawable = this.getResources().getDrawable(
         				android.R.drawable.ic_menu_myplaces);
@@ -170,7 +166,7 @@ public class MainActivity extends MapActivity {
 	    				 Images.Thumbnails.IMAGE_ID + " = " + imageId, 
 						 null, null);
 				if (!thumbCursor.moveToFirst()) {
-					Log.i(this.getClass().toString(), "No data for thumbnail");
+					Log.i(TAG, "No data for thumbnail");
 					continue;
 				}
 	    		int thumbIdColumn = thumbCursor.getColumnIndexOrThrow(Images.Thumbnails._ID);
@@ -301,8 +297,7 @@ public class MainActivity extends MapActivity {
     	public void onClick(View v) {
     		int index = mImageOverlay.getLastFocusedIndex();
     		if (index == -1) {
-    			Log.i(getLocalClassName(),
-    					"Couldn't get focused image?");
+    			Log.i(TAG, "Couldn't get focused image?");
     			return;
     		}
     		OverlayItem item = mImageOverlay.getItem(index);
