@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -95,7 +96,8 @@ public class MainActivity extends MapActivity {
         mDrawable = this.getResources().getDrawable(
         				android.R.drawable.ic_menu_myplaces);
         mImageOverlay = new ImageOverlay(mDrawable, mMapView);
-        mMyLocationOverlay = new MyLocationOverlay(getApplicationContext(), mMapView);
+        mMyLocationOverlay = new CustomMyLocationOverlay(
+        							getApplicationContext(), mMapView);
 
         new PopulateMapTask().execute();
         
@@ -347,7 +349,7 @@ public class MainActivity extends MapActivity {
 		public int size() {
 			return mOverlays.size();
 		}
-
+		
 	    /** pop up a balloon when clicking on an image marker;
 	     *  disable it when clicking elsewhere
 	     */
@@ -371,5 +373,19 @@ public class MainActivity extends MapActivity {
 		}
 	}
 
+	
+	class CustomMyLocationOverlay extends MyLocationOverlay {
+
+		public CustomMyLocationOverlay(Context context, MapView mapView) {
+			super(context, mapView);
+		}
+		
+		/** Override this so a tap on the My Location point has absolutely 
+		 *  no effect, thus allowing images under the point to still be selected. */
+		@Override
+		public boolean onTap(GeoPoint p, MapView map) {
+			return false;
+		}
+	}
    
 }
