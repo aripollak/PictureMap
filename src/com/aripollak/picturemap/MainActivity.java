@@ -129,7 +129,6 @@ public class MainActivity extends MapActivity {
     
 
     /** Populate the map overlay with all the images we find */ 
-    // TODO: put more recent images on top
     // TODO: Implement an intent to get called from Share in the gallery?
     // TODO: Attach to media scanner to redo map if card is re-inserted?
     // TODO: cache thumbnails and locations
@@ -334,7 +333,7 @@ public class MainActivity extends MapActivity {
 		
 		public void addOverlay(OverlayItem item) {
 			boundCenterBottom(item.getMarker(0));
-			mOverlays.add(item);
+			mOverlays.add(0, item); // put older items at the beginning
 		    populate();
 		}
 
@@ -361,6 +360,12 @@ public class MainActivity extends MapActivity {
 			
 			((MapView.LayoutParams) mPopup.getLayoutParams()).point = item.getPoint();
 			mPopup.setVisibility(View.VISIBLE);
+		}
+		
+		@Override
+		protected int getIndexToDraw(int drawingOrder) {
+			super.getIndexToDraw(drawingOrder);
+			return drawingOrder; // show newer items on top (higher rank)
 		}
 	}
 
