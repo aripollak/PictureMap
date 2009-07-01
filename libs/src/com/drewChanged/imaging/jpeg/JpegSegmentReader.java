@@ -255,7 +255,7 @@ public class JpegSegmentReader
             if (_stream instanceof BufferedInputStream) {
                 return (BufferedInputStream) _stream;
             } else {
-                return new BufferedInputStream(_stream);
+                return new BufferedInputStream(_stream, 8192);
             }
         }
         InputStream inputStream;
@@ -268,7 +268,7 @@ public class JpegSegmentReader
         } else {
             inputStream = new ByteArrayInputStream(_data);
         }
-        return new BufferedInputStream(inputStream);
+        return new BufferedInputStream(inputStream, 8192);
     }
 
     /**
