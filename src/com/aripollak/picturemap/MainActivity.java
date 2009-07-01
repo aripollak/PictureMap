@@ -303,7 +303,7 @@ public class MainActivity extends MapActivity {
     		Uri uri = Uri.withAppendedPath(
 						Images.Media.EXTERNAL_CONTENT_URI,
 						item.getSnippet());
-    		System.out.println(item.getSnippet());
+    		//System.out.println(item.getSnippet());
     		Intent intent = new Intent(Intent.ACTION_VIEW);
     		intent.setData(uri);
             //intent.setDataAndType(uri, "image/jpeg");
@@ -321,11 +321,11 @@ public class MainActivity extends MapActivity {
 	implements com.google.android.maps.ItemizedOverlay.OnFocusChangeListener {
 
 		private ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
-		private MapView mMapView;
+		//private MapView mMapView;
 		
 		public ImageOverlay(Drawable defaultMarker, MapView mapView) {
 			super(boundCenterBottom(defaultMarker));
-			mMapView = mapView;
+			//mMapView = mapView;
 			setOnFocusChangeListener(this);
 			populate();
 		}
@@ -353,12 +353,14 @@ public class MainActivity extends MapActivity {
 	     */
 		@Override
 		public void onFocusChanged(ItemizedOverlay overlay, OverlayItem item) {
-			if (item == null) {
-				mPopup.setVisibility(View.GONE);
+			// This seems to be required all the time, even when
+			// an image is already focused and we're just switching
+			mPopup.setVisibility(View.GONE);
+			if (item == null)
 				return;
-			}
-			
-			((MapView.LayoutParams) mPopup.getLayoutParams()).point = item.getPoint();
+			GeoPoint newPoint = item.getPoint();
+			((MapView.LayoutParams) mPopup.getLayoutParams()).point = newPoint;
+			//mMapView.getController().animateTo(newPoint);
 			mPopup.setVisibility(View.VISIBLE);
 		}
 		
