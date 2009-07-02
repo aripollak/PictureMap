@@ -49,6 +49,7 @@ import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 
 
+// TODO: add intent to share location with Maps?
 // TODO: Attach to media scanner to redo map if card is re-inserted?
 // TODO: cache thumbnails and locations
 // TODO: let people search for stuff by date/picture
