@@ -40,6 +40,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.drewChanged.imaging.jpeg.JpegMetadataReader;
 import com.drewChanged.imaging.jpeg.JpegProcessingException;
@@ -99,7 +100,15 @@ public class MainActivity extends MapActivity {
         mMyLocationOverlay = new CustomMyLocationOverlay(
         							getApplicationContext(), mMapView);
 
-        new PopulateMapTask().execute();
+        // Handle Share from the Gallery app
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        Uri uri = null;
+        if (action != null && action.equals(Intent.ACTION_SEND) &&
+        		intent.hasExtra(Intent.EXTRA_STREAM)) {
+        	uri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+        }
+        new PopulateMapTask().execute(uri);
         
     	mMapOverlays.add(mImageOverlay);
     	mMapOverlays.add(mMyLocationOverlay);
@@ -131,18 +140,31 @@ public class MainActivity extends MapActivity {
     
 
     /** Populate the map overlay with all the images we find */ 
-    // TODO: Implement an intent to get called from Share in the gallery?
     // TODO: Attach to media scanner to redo map if card is re-inserted?
     // TODO: cache thumbnails and locations
     // TODO: let people search for stuff by date/picture
     private class PopulateMapTask extends AsyncTask<Uri, OverlayItem, Long> {
+    	
+    	// were we called with a single item?
+    	private boolean mSingleItem = false;
+    	
     	@Override
 		protected Long doInBackground(Uri... uris) {
-	    	// Get the last 200 images from the external image store
-	    	Cursor cursor = managedQuery(Images.Media.EXTERNAL_CONTENT_URI, null, 
-	    								 null, null, Images.Media.DATE_MODIFIED + " DESC LIMIT 200");
+	    	Cursor cursor = null;
+	    	if (uris[0] != null) {
+	    		// a single picture has kindly been shared with us
+	    		mSingleItem = true;
+	    		cursor = managedQuery(uris[0], null, null, null, null);
+	    	} else {
+	    		// Get the last 200 images from the external image store
+	    		cursor = managedQuery(
+	    					Images.Media.EXTERNAL_CONTENT_URI, null, 
+    						null, null, 
+	    					Images.Media.DATE_MODIFIED + " DESC LIMIT 200");
+	    	}
 	    	if (cursor == null)
-	    		return null;
+    			return null;
+	    	
 	    	int idColumn = cursor.getColumnIndexOrThrow(Images.Media._ID);
 	    	int titleColumn = cursor.getColumnIndexOrThrow(Images.Media.TITLE);
 	    	int bucketNameColumn = cursor.getColumnIndexOrThrow(Images.Media.BUCKET_DISPLAY_NAME);
@@ -158,8 +180,12 @@ public class MainActivity extends MapActivity {
 	       		int imageId = cursor.getInt(idColumn);
 	       		String title = cursor.getString(titleColumn);
 	    		GeoPoint point = getGPSInfo(imageLocation);
-	    		if (point == null)
-	    			continue;
+	    		if (point == null) {
+	    			if (mSingleItem)
+	    				return null;
+	    			else
+	    				continue;
+	    		}
 	    		
 	    		// Retrieve thumbnail bitmap from thumbnail content provider
 	    		Cursor thumbCursor = managedQuery(
@@ -199,9 +225,9 @@ public class MainActivity extends MapActivity {
 				OverlayItem item = new OverlayItem(point, title, "" + imageId);
 	        	item.setMarker(new BitmapDrawable(thumb));
 	        	publishProgress(item);
-	    	} while (cursor.moveToNext());
+	    	} while (cursor.moveToNext() && !isCancelled());
 	    	
-	    	return null;
+	    	return (long)cursor.getPosition();
     	}
     	
     	
@@ -209,7 +235,8 @@ public class MainActivity extends MapActivity {
     	protected void onProgressUpdate(OverlayItem... items) {
     		super.onProgressUpdate(items);
         	mImageOverlay.addOverlay(items[0]);
-        	//mMapView.getController().animateTo(point);
+        	if (mSingleItem)
+        		mMapView.getController().animateTo(items[0].getPoint());
         	mMapView.invalidate(); // make the map redraw
     	}
     	
@@ -223,6 +250,11 @@ public class MainActivity extends MapActivity {
     	@Override
     	protected void onPostExecute(Long result) {
     		super.onPostExecute(result);
+    		if (result == null) {
+    			Toast.makeText(MainActivity.this, 
+    						   R.string.toast_no_images,
+    						   Toast.LENGTH_SHORT).show();
+    		}
     		setProgressBarIndeterminateVisibility(false);
     	}
     	
