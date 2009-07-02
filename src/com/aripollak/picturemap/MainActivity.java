@@ -34,6 +34,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore.Images;
+import android.util.Config;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -73,7 +74,7 @@ public class MainActivity extends MapActivity {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.main);
-        
+
         /*Button button = (Button)findViewById(R.id.choosepic);
         button.setOnClickListener(mGetImageListener); */
         
@@ -194,7 +195,8 @@ public class MainActivity extends MapActivity {
 	    				 Images.Thumbnails.IMAGE_ID + " = " + imageId, 
 						 null, null);
 				if (!thumbCursor.moveToFirst()) {
-					Log.i(TAG, "No data for thumbnail");
+					if (Config.LOGV)
+						Log.v(TAG, "No data for thumbnail");
 					continue;
 				}
 	    		int thumbIdColumn = thumbCursor.getColumnIndexOrThrow(Images.Thumbnails._ID);
@@ -253,7 +255,7 @@ public class MainActivity extends MapActivity {
     		if (result == null) {
     			Toast.makeText(MainActivity.this, 
     						   R.string.toast_no_images,
-    						   Toast.LENGTH_SHORT).show();
+    						   Toast.LENGTH_LONG).show();
     		}
     		setProgressBarIndeterminateVisibility(false);
     	}
@@ -273,7 +275,6 @@ public class MainActivity extends MapActivity {
     		int lonE6 = 0;
     		
     		try {
-    			// TODO: fix JpegMetadataReader to accept File
     			File file = new File(imageLocation);
     			Metadata metadata = JpegMetadataReader.readMetadata(file);
     			Directory gpsDirectory = metadata.getDirectory(GpsDirectory.class);
@@ -314,10 +315,10 @@ public class MainActivity extends MapActivity {
 				lonE6 += (((minutes * 60.0) + seconds) / 3600f) * 1E6;
 				lonE6 *= (reference == 'E') ? 1 : -1;
 			} catch (JpegProcessingException e) {
-				e.printStackTrace();
+				//e.printStackTrace();
 				return null;
 			} catch (MetadataException e) {
-				e.printStackTrace();
+				//e.printStackTrace();
 				return null;
 			}
     		return new GeoPoint(latE6, lonE6);
@@ -332,17 +333,16 @@ public class MainActivity extends MapActivity {
     	public void onClick(View v) {
     		int index = mImageOverlay.getLastFocusedIndex();
     		if (index == -1) {
-    			Log.i(TAG, "Couldn't get focused image?");
+    			if (Config.LOGV)
+    				Log.v(TAG, "Couldn't get focused image?");
     			return;
     		}
     		OverlayItem item = mImageOverlay.getItem(index);
     		Uri uri = Uri.withAppendedPath(
 						Images.Media.EXTERNAL_CONTENT_URI,
 						item.getSnippet());
-    		//System.out.println(item.getSnippet());
     		Intent intent = new Intent(Intent.ACTION_VIEW);
-    		intent.setData(uri);
-            //intent.setDataAndType(uri, "image/jpeg");
+            intent.setDataAndType(uri, "image/jpeg");
             startActivity(Intent.createChooser(
             		intent, getString(R.string.select_image)));
     	}
