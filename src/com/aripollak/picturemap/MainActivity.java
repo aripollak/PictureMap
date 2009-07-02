@@ -155,12 +155,13 @@ public class MainActivity extends MapActivity {
 	    	
 	    	do {
 	       		String imageLocation = cursor.getString(dataColumn);
+	       		int imageId = cursor.getInt(idColumn);
+	       		String title = cursor.getString(titleColumn);
 	    		GeoPoint point = getGPSInfo(imageLocation);
 	    		if (point == null)
 	    			continue;
 	    		
 	    		// Retrieve thumbnail bitmap from thumbnail content provider
-	    		int imageId = cursor.getInt(idColumn);
 	    		Cursor thumbCursor = managedQuery(
 	    				 Images.Thumbnails.EXTERNAL_CONTENT_URI,
 	    				 null,
@@ -195,7 +196,7 @@ public class MainActivity extends MapActivity {
 				}
 	    		
 				// add the thumbnail as the marker
-	        	OverlayItem item = new OverlayItem(point, cursor.getString(titleColumn), "" + imageId);
+				OverlayItem item = new OverlayItem(point, title, "" + imageId);
 	        	item.setMarker(new BitmapDrawable(thumb));
 	        	publishProgress(item);
 	    	} while (cursor.moveToNext());
@@ -291,6 +292,7 @@ public class MainActivity extends MapActivity {
     	}
     }
     
+
     
     /** Clicked on View Picture button */
     private final OnClickListener mViewImageListener = new OnClickListener() {
