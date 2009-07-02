@@ -157,7 +157,6 @@ public class MainActivity extends MapActivity {
 */
     
     
-    
     /** Clicked on View Picture button */
     private final OnClickListener mViewImageListener = new OnClickListener() {
     	@Override

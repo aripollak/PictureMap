@@ -42,6 +42,7 @@ public class PopulateMapTask extends AsyncTask<Uri, OverlayItem, Long> {
     	Cursor cursor = null;
     	if (uris[0] != null) {
     		// a single picture has kindly been shared with us
+    		mSingleItem = true;
     		cursor = mMainActivity.managedQuery(uris[0], null, null, null, null);
     	} else {
     		// Get the last 200 images from the external image store
