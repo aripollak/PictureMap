@@ -64,14 +64,15 @@ public class MainActivity extends MapActivity {
 	MapView mMapView;
 	View mPopup;
 	List<Overlay> mMapOverlays;
-	Drawable mDrawable;
 	ImageOverlay mImageOverlay;
 	MyLocationOverlay mMyLocationOverlay;
+	PopulateMapTask mPopulateMapTask;
 	
 	/* Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    	super.onCreate(savedInstanceState);
+    	
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.main);
 
@@ -95,21 +96,29 @@ public class MainActivity extends MapActivity {
 		openImageButton.setOnClickListener(mViewImageListener);
 		
         mMapOverlays = mMapView.getOverlays();
-        mDrawable = this.getResources().getDrawable(
-        				android.R.drawable.ic_menu_myplaces);
-        mImageOverlay = new ImageOverlay(mDrawable, mMapView);
         mMyLocationOverlay = new CustomMyLocationOverlay(
         							getApplicationContext(), mMapView);
-
-        // Handle Share from the Gallery app
-        Intent intent = getIntent();
-        String action = intent.getAction();
-        Uri uri = null;
-        if (action != null && action.equals(Intent.ACTION_SEND) &&
-        		intent.hasExtra(Intent.EXTRA_STREAM)) {
-        	uri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+        
+    	// If we just had a configuration change, re-use the old image overlay
+    	MainActivity oldInstance = (MainActivity) getLastNonConfigurationInstance();
+        if (oldInstance != null) {
+        	mImageOverlay = oldInstance.mImageOverlay;
+        } else {
+        	Drawable mDrawable = this.getResources().getDrawable(
+        							android.R.drawable.ic_menu_myplaces);
+        	mImageOverlay = new ImageOverlay(mDrawable, mMapView);
+            Intent intent = getIntent();
+            String action = intent.getAction();
+            Uri uri = null;
+            if (action != null && action.equals(Intent.ACTION_SEND) &&
+            		intent.hasExtra(Intent.EXTRA_STREAM)) {
+                // Handle Share from the Gallery app
+            	uri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+            }
+            mPopulateMapTask = new PopulateMapTask();
+            mPopulateMapTask.execute(uri);
         }
-        new PopulateMapTask().execute(uri);
+        
         
     	mMapOverlays.add(mImageOverlay);
     	mMapOverlays.add(mMyLocationOverlay);
@@ -125,6 +134,24 @@ public class MainActivity extends MapActivity {
     protected void onPause() {
     	super.onPause();
     	mMyLocationOverlay.disableMyLocation();
+    }
+    
+    @Override
+    public Object onRetainNonConfigurationInstance() {
+    	if (mPopulateMapTask == null || 
+    			mPopulateMapTask.getStatus().equals(AsyncTask.Status.FINISHED))
+    		return this;
+    	else
+    		// Don't save instance if we haven't finished populating the map
+    		// since the old thread will be in a weird state
+    		return null;
+    }
+    
+    @Override
+    protected void onDestroy() {
+    	super.onDestroy();
+    	// Don't keep running, in case this activity will get re-created
+    	mPopulateMapTask.cancel(true);
     }
     
     // TODO: save currently focused map item
