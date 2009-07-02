@@ -30,11 +30,15 @@ import android.os.Bundle;
 import android.provider.MediaStore.Images;
 import android.util.Config;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
@@ -79,7 +83,7 @@ public class MainActivity extends MapActivity {
 				ViewGroup.LayoutParams.WRAP_CONTENT,
 				new GeoPoint(0, 0), MapView.LayoutParams.BOTTOM_CENTER);
         mMapView.addView(mPopup, params);
-		
+
 		// TODO: make button look like a caption
 		Button openImageButton = (Button) findViewById(R.id.viewButton);
 		openImageButton.setOnClickListener(mViewImageListener);
@@ -155,6 +159,28 @@ public class MainActivity extends MapActivity {
     	super.onSaveInstanceState(outState);
     }
 */
+    
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.mainmenu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+    	super.onOptionsItemSelected(item);
+    	switch (item.getItemId()) {
+    	case R.id.my_location:
+    		GeoPoint point = mMyLocationOverlay.getMyLocation();
+    		if (point == null)
+    			Toast.makeText(this, "Couldn't get my location",
+    						   Toast.LENGTH_SHORT).show();
+    		else
+    			mMapView.getController().animateTo(point);
+    		return true;
+    	}
+    	return false;
+    }
     
     
     /** Clicked on View Picture button */
