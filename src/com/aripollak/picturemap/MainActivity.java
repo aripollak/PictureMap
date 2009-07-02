@@ -18,17 +18,11 @@
 
 package com.aripollak.picturemap;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -41,15 +35,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.Toast;
 
-import com.drewChanged.imaging.jpeg.JpegMetadataReader;
-import com.drewChanged.imaging.jpeg.JpegProcessingException;
-import com.drewChanged.lang.Rational;
-import com.drewChanged.metadata.Directory;
-import com.drewChanged.metadata.Metadata;
-import com.drewChanged.metadata.MetadataException;
-import com.drewChanged.metadata.exif.GpsDirectory;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapActivity;
@@ -59,6 +45,9 @@ import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 
 
+// TODO: Attach to media scanner to redo map if card is re-inserted?
+// TODO: cache thumbnails and locations
+// TODO: let people search for stuff by date/picture
 public class MainActivity extends MapActivity {
 	private static final String TAG = "PictureMap";
 	MapView mMapView;
@@ -115,7 +104,7 @@ public class MainActivity extends MapActivity {
                 // Handle Share from the Gallery app
             	uri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
             }
-            mPopulateMapTask = new PopulateMapTask();
+            mPopulateMapTask = new PopulateMapTask(this);
             mPopulateMapTask.execute(uri);
         }
         
@@ -150,8 +139,9 @@ public class MainActivity extends MapActivity {
     @Override
     protected void onDestroy() {
     	super.onDestroy();
-    	// Don't keep running, in case this activity will get re-created
-    	mPopulateMapTask.cancel(true);
+    	// Don't keep running in case this activity will get restarted
+    	if (mPopulateMapTask != null)
+    		mPopulateMapTask.cancel(true);
     }
     
     // TODO: save currently focused map item
@@ -166,193 +156,7 @@ public class MainActivity extends MapActivity {
     }
 */
     
-
-    /** Populate the map overlay with all the images we find */ 
-    // TODO: Attach to media scanner to redo map if card is re-inserted?
-    // TODO: cache thumbnails and locations
-    // TODO: let people search for stuff by date/picture
-    private class PopulateMapTask extends AsyncTask<Uri, OverlayItem, Long> {
-    	
-    	// were we called with a single item?
-    	private boolean mSingleItem = false;
-    	
-    	@Override
-		protected Long doInBackground(Uri... uris) {
-	    	Cursor cursor = null;
-	    	if (uris[0] != null) {
-	    		// a single picture has kindly been shared with us
-	    		mSingleItem = true;
-	    		cursor = managedQuery(uris[0], null, null, null, null);
-	    	} else {
-	    		// Get the last 200 images from the external image store
-	    		cursor = managedQuery(
-	    					Images.Media.EXTERNAL_CONTENT_URI, null, 
-    						null, null, 
-	    					Images.Media.DATE_MODIFIED + " DESC LIMIT 200");
-	    	}
-	    	if (cursor == null)
-    			return null;
-	    	
-	    	int idColumn = cursor.getColumnIndexOrThrow(Images.Media._ID);
-	    	int titleColumn = cursor.getColumnIndexOrThrow(Images.Media.TITLE);
-	    	int bucketNameColumn = cursor.getColumnIndexOrThrow(Images.Media.BUCKET_DISPLAY_NAME);
-	    	int bucketIdColumn = cursor.getColumnIndexOrThrow(Images.Media.BUCKET_ID);
-	    	int dataColumn = cursor.getColumnIndexOrThrow(Images.Media.DATA);
-	    	
-	    	if (!cursor.moveToFirst()) {
-	    		return null;
-	    	}
-	    	
-	    	do {
-	       		String imageLocation = cursor.getString(dataColumn);
-	       		int imageId = cursor.getInt(idColumn);
-	       		String title = cursor.getString(titleColumn);
-	    		GeoPoint point = getGPSInfo(imageLocation);
-	    		if (point == null) {
-	    			if (mSingleItem)
-	    				return null;
-	    			else
-	    				continue;
-	    		}
-	    		
-	    		// Retrieve thumbnail bitmap from thumbnail content provider
-	    		Cursor thumbCursor = managedQuery(
-	    				 Images.Thumbnails.EXTERNAL_CONTENT_URI,
-	    				 null,
-	    				 Images.Thumbnails.IMAGE_ID + " = " + imageId, 
-						 null, null);
-				if (!thumbCursor.moveToFirst()) {
-					if (Config.LOGV)
-						Log.v(TAG, "No data for thumbnail");
-					continue;
-				}
-	    		int thumbIdColumn = thumbCursor.getColumnIndexOrThrow(Images.Thumbnails._ID);
-				Bitmap thumb;
-				try {
-					thumb = Images.Media.getBitmap(
-										getContentResolver(), 
-										Uri.withAppendedPath(
-											Images.Thumbnails.EXTERNAL_CONTENT_URI,
-											thumbCursor.getString(thumbIdColumn)));
-					if (thumb == null)
-						continue;
-					// Make sure we keep the aspect ratio, with a maximum edge of 50 pixels
-					float factor = Math.max(thumb.getHeight() / 50f, thumb.getHeight() / 50f);
-					int scaledWidth = Math.max(1, (int)(thumb.getWidth() / factor));
-					int scaledHeight = Math.max(1, (int)(thumb.getHeight() / factor));
-					thumb = Bitmap.createScaledBitmap(
-										thumb, scaledWidth, 
-										scaledHeight, true);
-				} catch (FileNotFoundException e) {
-					continue;
-				} catch (IOException e) {
-					e.printStackTrace();
-					continue;
-				}
-	    		
-				// add the thumbnail as the marker
-				OverlayItem item = new OverlayItem(point, title, "" + imageId);
-	        	item.setMarker(new BitmapDrawable(thumb));
-	        	publishProgress(item);
-	    	} while (cursor.moveToNext() && !isCancelled());
-	    	
-	    	return (long)cursor.getPosition();
-    	}
-    	
-    	
-    	@Override
-    	protected void onProgressUpdate(OverlayItem... items) {
-    		super.onProgressUpdate(items);
-        	mImageOverlay.addOverlay(items[0]);
-        	if (mSingleItem)
-        		mMapView.getController().animateTo(items[0].getPoint());
-        	mMapView.invalidate(); // make the map redraw
-    	}
-    	
-    	@Override
-    	protected void onPreExecute() {
-    		super.onPreExecute();
-    		setProgressBarIndeterminateVisibility(true);
-    		
-    	}
-    	
-    	@Override
-    	protected void onPostExecute(Long result) {
-    		super.onPostExecute(result);
-    		if (result == null) {
-    			Toast.makeText(MainActivity.this, 
-    						   R.string.toast_no_images,
-    						   Toast.LENGTH_LONG).show();
-    		}
-    		setProgressBarIndeterminateVisibility(false);
-    	}
-    	
-    	/** Try to read the specified image and get a Point from the 
-    	 *  location info inside.
-    	 *  @param imageLocation path to image on filesystem
-    	 *  @return null if we couldn't get a proper location
-    	 */
-    	private GeoPoint getGPSInfo(String imageLocation) {
-    		if (!(imageLocation.toLowerCase().endsWith(".jpg") || 
-    				imageLocation.toLowerCase().endsWith(".jpeg"))) {
-    			return null;
-    		}
-    		
-    		int latE6 = 0;
-    		int lonE6 = 0;
-    		
-    		try {
-    			File file = new File(imageLocation);
-    			Metadata metadata = JpegMetadataReader.readMetadata(file);
-    			Directory gpsDirectory = metadata.getDirectory(GpsDirectory.class);
-    			if (!gpsDirectory.containsTag(GpsDirectory.TAG_GPS_LATITUDE))
-    				return null;
-    			
-    			Rational[] temp;
-    			char reference;
-    			int degrees;
-    			float minutes;
-    			float seconds;
-    			
-				// Read latitude reference (N or S)
-    			reference = (char) gpsDirectory.getInt(GpsDirectory.TAG_GPS_LATITUDE_REF);
-    			if (reference != 'N' && reference != 'S') {
-					return null;
-				}
-				// Read latitude
-				temp = gpsDirectory.getRationalArray(GpsDirectory.TAG_GPS_LATITUDE);
-				degrees = temp[0].intValue();
-				minutes = temp[1].floatValue();
-				seconds = temp[2].floatValue();
-				latE6 = degrees * (int)1E6;
-				latE6 += (((minutes * 60.0) + seconds) / 3600f) * 1E6;
-				latE6 *= (reference == 'N') ? 1 : -1;
-				
-				// Read longitude reference (W or E)
-    			reference = (char) gpsDirectory.getInt(GpsDirectory.TAG_GPS_LONGITUDE_REF);
-				if (reference != 'E' && reference != 'W') {
-					return null;
-				}
-				// Read latitude
-				temp = gpsDirectory.getRationalArray(GpsDirectory.TAG_GPS_LONGITUDE);
-				degrees = temp[0].intValue();
-				minutes = temp[1].floatValue();
-				seconds = temp[2].floatValue();
-				lonE6 = degrees * (int)1E6;
-				lonE6 += (((minutes * 60.0) + seconds) / 3600f) * 1E6;
-				lonE6 *= (reference == 'E') ? 1 : -1;
-			} catch (JpegProcessingException e) {
-				//e.printStackTrace();
-				return null;
-			} catch (MetadataException e) {
-				//e.printStackTrace();
-				return null;
-			}
-    		return new GeoPoint(latE6, lonE6);
-    	}
-    }
     
-
     
     /** Clicked on View Picture button */
     private final OnClickListener mViewImageListener = new OnClickListener() {
@@ -380,7 +184,7 @@ public class MainActivity extends MapActivity {
     protected boolean isRouteDisplayed() { return false; }
     
 
-	private class ImageOverlay extends ItemizedOverlay<OverlayItem> 
+	protected class ImageOverlay extends ItemizedOverlay<OverlayItem> 
 	implements com.google.android.maps.ItemizedOverlay.OnFocusChangeListener {
 
 		private ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
