@@ -37,6 +37,8 @@ public class PopulateMapTask extends AsyncTask<Uri, OverlayItem, Long> {
 		mMainActivity = ma;
 	}
 	
+	// TODO: return actual number of images added
+	// TODO: show pictures even if the thumbnail doesn't exist yet (BitmapFactory)
 	@Override
 	protected Long doInBackground(Uri... uris) {
     	Cursor cursor = null;

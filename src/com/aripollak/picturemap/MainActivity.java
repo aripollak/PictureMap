@@ -53,6 +53,7 @@ import com.google.android.maps.OverlayItem;
 // TODO: Attach to media scanner to redo map if card is re-inserted?
 // TODO: cache thumbnails and locations
 // TODO: let people search for stuff by date/picture
+// TODO: let people re-geotag pictures
 public class MainActivity extends MapActivity {
 	private static final String TAG = "PictureMap";
 	MapView mMapView;
@@ -174,7 +175,7 @@ public class MainActivity extends MapActivity {
     	case R.id.my_location:
     		GeoPoint point = mMyLocationOverlay.getMyLocation();
     		if (point == null)
-    			Toast.makeText(this, "Couldn't get my location",
+    			Toast.makeText(this, "Location unavailable",
     						   Toast.LENGTH_SHORT).show();
     		else
     			mMapView.getController().animateTo(point);
