@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="toast_no_images">Couldn't get any images with geographic information.</string>
+    <string name="toast_no_images">Couldn't find any images with geographic information.</string>
     <string name="select_image">Select image</string>
     <string name="choosepic">Choose Picture</string>
     <string name="app_name">Picture Map</string>
+<string name="toast_no_geo">Selected image does not contain geographic information.</string>
 </resources>

@@ -51,6 +51,7 @@ import com.google.android.maps.OverlayItem;
 
 // TODO: check for leaks; don't share this activity's context
 // TODO: add intent to share location with Maps?
+// TODO: show larger image on click
 // TODO: Attach to media scanner to redo map if card is re-inserted?
 // TODO: cache thumbnails and locations
 // TODO: let people search for stuff by date/picture

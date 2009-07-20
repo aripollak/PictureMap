@@ -28,7 +28,7 @@ import com.google.android.maps.OverlayItem;
 
 
 /** Populate the map overlay with all the images we find */ 
-public class PopulateMapTask extends AsyncTask<Uri, OverlayItem, Long> {
+public class PopulateMapTask extends AsyncTask<Uri, OverlayItem, Integer> {
 	private static final String TAG = "PopulateMapTask";
 
 	// were we called with a single item?
@@ -39,9 +39,8 @@ public class PopulateMapTask extends AsyncTask<Uri, OverlayItem, Long> {
 		mMainActivity = ma;
 	}
 	
-	// TODO: return actual number of images added
 	@Override
-	protected Long doInBackground(Uri... uris) {
+	protected Integer doInBackground(Uri... uris) {
     	Cursor cursor = null;
     	if (uris[0] != null) {
     		// a single picture has kindly been shared with us
@@ -55,7 +54,7 @@ public class PopulateMapTask extends AsyncTask<Uri, OverlayItem, Long> {
     					Images.Media.DATE_MODIFIED + " DESC LIMIT 200");
     	}
     	if (cursor == null)
-			return null;
+			return 0;
     	
     	int idColumn = cursor.getColumnIndexOrThrow(Images.Media._ID);
     	int titleColumn = cursor.getColumnIndexOrThrow(Images.Media.TITLE);
@@ -64,9 +63,10 @@ public class PopulateMapTask extends AsyncTask<Uri, OverlayItem, Long> {
     	int dataColumn = cursor.getColumnIndexOrThrow(Images.Media.DATA);
     	
     	if (!cursor.moveToFirst()) {
-    		return null;
+    		return 0;
     	}
     	
+    	int imagesAdded = 0;
     	do {
        		String imageLocation = cursor.getString(dataColumn);
        		int imageId = cursor.getInt(idColumn);
@@ -75,7 +75,7 @@ public class PopulateMapTask extends AsyncTask<Uri, OverlayItem, Long> {
     		Bitmap thumb = getThumb(imageLocation);
     		if (point == null || thumb == null) {
     			if (mSingleItem)
-    				return null;
+    				return 0;
     			else
     				continue;
     		}
@@ -84,9 +84,10 @@ public class PopulateMapTask extends AsyncTask<Uri, OverlayItem, Long> {
 			OverlayItem item = new OverlayItem(point, title, "" + imageId);
         	item.setMarker(new BitmapDrawable(thumb));
         	publishProgress(item);
+        	imagesAdded += 1;
     	} while (cursor.moveToNext() && !isCancelled());
     	
-    	return (long)cursor.getPosition();
+    	return imagesAdded;
 	}
 	
 	
@@ -107,12 +108,17 @@ public class PopulateMapTask extends AsyncTask<Uri, OverlayItem, Long> {
 	}
 	
 	@Override
-	protected void onPostExecute(Long result) {
+	protected void onPostExecute(Integer result) {
 		super.onPostExecute(result);
-		if (result == null) {
-			Toast.makeText(mMainActivity, 
-						   R.string.toast_no_images,
-						   Toast.LENGTH_LONG).show();
+		if (result == null || result == 0) {
+			if (mSingleItem)
+				Toast.makeText(mMainActivity, 
+							   R.string.toast_no_geo,
+							   Toast.LENGTH_LONG).show();
+			else
+				Toast.makeText(mMainActivity, 
+							   R.string.toast_no_images,
+							   Toast.LENGTH_LONG).show();
 		}
 		mMainActivity.setProgressBarIndeterminateVisibility(false);
 	}
