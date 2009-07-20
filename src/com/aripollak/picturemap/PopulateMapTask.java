@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -21,6 +22,7 @@ import com.drewChanged.metadata.Directory;
 import com.drewChanged.metadata.Metadata;
 import com.drewChanged.metadata.MetadataException;
 import com.drewChanged.metadata.exif.GpsDirectory;
+import com.drewChanged.metadata.jpeg.JpegDirectory;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.OverlayItem;
 
@@ -38,7 +40,6 @@ public class PopulateMapTask extends AsyncTask<Uri, OverlayItem, Long> {
 	}
 	
 	// TODO: return actual number of images added
-	// TODO: show pictures even if the thumbnail doesn't exist yet (BitmapFactory)
 	@Override
 	protected Long doInBackground(Uri... uris) {
     	Cursor cursor = null;
@@ -70,49 +71,15 @@ public class PopulateMapTask extends AsyncTask<Uri, OverlayItem, Long> {
        		String imageLocation = cursor.getString(dataColumn);
        		int imageId = cursor.getInt(idColumn);
        		String title = cursor.getString(titleColumn);
-    		GeoPoint point = getGPSInfo(imageLocation);
-    		if (point == null) {
+    		GeoPoint point = getGPSInfo(imageLocation);    		
+    		Bitmap thumb = getThumb(imageLocation);
+    		if (point == null || thumb == null) {
     			if (mSingleItem)
     				return null;
     			else
     				continue;
     		}
-    		
-    		// Retrieve thumbnail bitmap from thumbnail content provider
-    		Cursor thumbCursor = mMainActivity.managedQuery(
-    				 Images.Thumbnails.EXTERNAL_CONTENT_URI,
-    				 null,
-    				 Images.Thumbnails.IMAGE_ID + " = " + imageId, 
-					 null, null);
-			if (!thumbCursor.moveToFirst()) {
-				if (Config.LOGV)
-					Log.v(TAG, "No data for thumbnail");
-				continue;
-			}
-    		int thumbIdColumn = thumbCursor.getColumnIndexOrThrow(Images.Thumbnails._ID);
-			Bitmap thumb;
-			try {
-				thumb = Images.Media.getBitmap(
-									mMainActivity.getContentResolver(), 
-									Uri.withAppendedPath(
-										Images.Thumbnails.EXTERNAL_CONTENT_URI,
-										thumbCursor.getString(thumbIdColumn)));
-				if (thumb == null)
-					continue;
-				// Make sure we keep the aspect ratio, with a maximum edge of 50 pixels
-				float factor = Math.max(thumb.getHeight() / 50f, thumb.getHeight() / 50f);
-				int scaledWidth = Math.max(1, (int)(thumb.getWidth() / factor));
-				int scaledHeight = Math.max(1, (int)(thumb.getHeight() / factor));
-				thumb = Bitmap.createScaledBitmap(
-									thumb, scaledWidth, 
-									scaledHeight, true);
-			} catch (FileNotFoundException e) {
-				continue;
-			} catch (IOException e) {
-				e.printStackTrace();
-				continue;
-			}
-    		
+    				
 			// add the thumbnail as the marker
 			OverlayItem item = new OverlayItem(point, title, "" + imageId);
         	item.setMarker(new BitmapDrawable(thumb));
@@ -212,6 +179,39 @@ public class PopulateMapTask extends AsyncTask<Uri, OverlayItem, Long> {
 			return null;
 		}
 		return new GeoPoint(latE6, lonE6);
+	}
+	
+	/** Try to get a thumbnail from the specified image. */ 
+	private Bitmap getThumb(String imageLocation) {
+		try {
+			File file = new File(imageLocation);
+			Metadata metadata = JpegMetadataReader.readMetadata(file);
+			Directory jpegDirectory = metadata.getDirectory(JpegDirectory.class);
+			if (!jpegDirectory.containsTag(JpegDirectory.TAG_JPEG_IMAGE_WIDTH) || 
+					!jpegDirectory.containsTag(JpegDirectory.TAG_JPEG_IMAGE_HEIGHT))
+				return null;
+			
+			int width = jpegDirectory.getInt(JpegDirectory.TAG_JPEG_IMAGE_WIDTH);
+			int height = jpegDirectory.getInt(JpegDirectory.TAG_JPEG_IMAGE_HEIGHT);
+			// Make sure we keep the aspect ratio, with a maximum edge of 60 pixels
+			float factor = Math.max(width / 60f, height / 60f);
+			int scaledWidth = Math.max(1, (int)(width / factor));
+			int scaledHeight = Math.max(1, (int)(height / factor));
+			System.out.println(factor);
+			// First subsample the image without loading  into memory,
+			// then scale it to exactly the size we want
+			BitmapFactory.Options opts = new BitmapFactory.Options();
+    		opts.inSampleSize = (int) factor; 
+    		return Bitmap.createScaledBitmap(
+    				BitmapFactory.decodeFile(imageLocation, opts),
+    				scaledWidth, scaledHeight, true);
+		} catch (JpegProcessingException e) {
+			//e.printStackTrace();
+			return null;
+		} catch (MetadataException e) {
+			//e.printStackTrace();
+			return null;
+		}
 	}
 }
 

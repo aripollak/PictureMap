@@ -49,6 +49,7 @@ import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 
 
+// TODO: check for leaks; don't share this activity's context
 // TODO: add intent to share location with Maps?
 // TODO: Attach to media scanner to redo map if card is re-inserted?
 // TODO: cache thumbnails and locations
