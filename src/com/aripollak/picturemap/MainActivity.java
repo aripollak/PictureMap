@@ -52,7 +52,9 @@ import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 
 
+// TODO: make about box!
 // TODO: add intent to share location with Maps?
+// TODO: add forward/back arrows to scroll through images
 // TODO: Attach to media scanner to redo map if card is re-inserted?
 // TODO: cache thumbnails and locations
 // TODO: let people search for stuff by date/picture
@@ -275,9 +277,8 @@ public class MainActivity extends MapActivity {
 							itemPoint.getLatitudeE6() + latitudeAdjust,
 							itemPoint.getLongitudeE6());
 			controller.animateTo(scrollPoint);
-			
-			Bitmap bm = ImageUtilities.getThumb(item.getTitle(), 200);
-			mPopupImage.setImageBitmap(bm);
+
+			new ShowBalloon().execute(item.getTitle());
 			mPopup.setVisibility(View.VISIBLE);
 		}
 		
@@ -285,6 +286,26 @@ public class MainActivity extends MapActivity {
 		protected int getIndexToDraw(int drawingOrder) {
 			super.getIndexToDraw(drawingOrder);
 			return drawingOrder; // show newer items on top (higher rank)
+		}
+		
+		   
+		class ShowBalloon extends AsyncTask<String, Integer, Bitmap>{
+			@Override
+			protected void onPreExecute() {
+				super.onPreExecute();
+				// FIXME: show progress meter here
+			}
+			
+			@Override
+			protected Bitmap doInBackground(String... locations) {
+				return ImageUtilities.getThumb(locations[0], 200);
+			}
+			
+			@Override
+			protected void onPostExecute(Bitmap bm) {
+				super.onPostExecute(bm);
+				mPopupImage.setImageBitmap(bm);
+			}
 		}
 	}
 
@@ -302,5 +323,5 @@ public class MainActivity extends MapActivity {
 			return false;
 		}
 	}
-   
+
 }
