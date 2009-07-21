@@ -23,6 +23,7 @@ import java.util.List;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -38,11 +39,13 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapActivity;
+import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
 import com.google.android.maps.Overlay;
@@ -50,7 +53,6 @@ import com.google.android.maps.OverlayItem;
 
 
 // TODO: add intent to share location with Maps?
-// TODO: show larger image on click
 // TODO: Attach to media scanner to redo map if card is re-inserted?
 // TODO: cache thumbnails and locations
 // TODO: let people search for stuff by date/picture
@@ -58,7 +60,6 @@ import com.google.android.maps.OverlayItem;
 public class MainActivity extends MapActivity {
 	static final String TAG = "PictureMap";
 	MapView mMapView;
-	View mPopup;
 	List<Overlay> mMapOverlays;
 	ImageOverlay mImageOverlay;
 	MyLocationOverlay mMyLocationOverlay;
@@ -78,17 +79,18 @@ public class MainActivity extends MapActivity {
         mMapView = (MapView) findViewById(R.id.map);
         mMapView.setBuiltInZoomControls(true);
         
-		// TODO: make popup look like a caption
         // Can't embed the popup in main.xml since we can't seem to access
         // the MapView.LayoutParams-specific fields from there.
-        mPopup = getLayoutInflater().inflate(R.layout.popup, null); 
+    	View popup = getLayoutInflater().inflate(R.layout.popup, null);
+		
 		MapView.LayoutParams params = new MapView.LayoutParams(
 				ViewGroup.LayoutParams.WRAP_CONTENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT,
 				new GeoPoint(0, 0), MapView.LayoutParams.BOTTOM_CENTER);
-        mMapView.addView(mPopup, params);
-
-		Button openImageButton = (Button) findViewById(R.id.viewButton);
+        mMapView.addView(popup, params);
+        
+    	ImageView popupImage = (ImageView) findViewById(R.id.popup_image);
+		Button openImageButton = (Button) findViewById(R.id.popup_viewbutton);
 		openImageButton.setOnClickListener(mViewImageListener);
 		
         mMapOverlays = mMapView.getOverlays();
@@ -99,11 +101,13 @@ public class MainActivity extends MapActivity {
     	ImageOverlay oldInstance = (ImageOverlay) getLastNonConfigurationInstance();
         if (oldInstance != null) {
         	mImageOverlay = oldInstance;
-        	mImageOverlay.mPopup = mPopup;
+        	mImageOverlay.mMapView = mMapView;
+        	mImageOverlay.mPopup = popup;
+        	mImageOverlay.mPopupImage = popupImage;
         } else {
         	Drawable mDrawable = this.getResources().getDrawable(
         							android.R.drawable.ic_menu_myplaces);
-        	mImageOverlay = new ImageOverlay(mDrawable, mPopup);
+        	mImageOverlay = new ImageOverlay(mDrawable, mMapView, popup, popupImage);
             Intent intent = getIntent();
             String action = intent.getAction();
             Uri uri = null;
@@ -217,11 +221,15 @@ public class MainActivity extends MapActivity {
 	implements com.google.android.maps.ItemizedOverlay.OnFocusChangeListener {
 
 		private ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
+		protected MapView mMapView;
 		protected View mPopup;
+		protected ImageView mPopupImage;
 		
-		public ImageOverlay(Drawable defaultMarker, View popup) {
+		public ImageOverlay(Drawable defaultMarker, MapView mapView, View popup, ImageView popupImage) {
 			super(boundCenterBottom(defaultMarker));
+			mMapView = mapView;
 			mPopup = popup;
+			mPopupImage = popupImage;
 			setOnFocusChangeListener(this);
 			populate();
 		}
@@ -254,9 +262,13 @@ public class MainActivity extends MapActivity {
 			mPopup.setVisibility(View.GONE);
 			if (item == null)
 				return;
+			MapController controller = mMapView.getController();
 			GeoPoint newPoint = item.getPoint();
+			//GeoPoint scrollPoint = new GeoPoint(newPoint.getLatitudeE6(), newPoint.getLongitudeE6());
 			((MapView.LayoutParams) mPopup.getLayoutParams()).point = newPoint;
-			//mMapView.getController().animateTo(newPoint);
+			controller.animateTo(newPoint);
+			Bitmap bm = ImageUtilities.getThumb(item.getTitle(), 200);
+			mPopupImage.setImageBitmap(bm);
 			mPopup.setVisibility(View.VISIBLE);
 		}
 		

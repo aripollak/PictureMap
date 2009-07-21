@@ -66,7 +66,7 @@ public class PopulateMapTask extends AsyncTask<Uri, OverlayItem, Integer> {
     		}
     				
 			// add the thumbnail as the marker
-			OverlayItem item = new OverlayItem(point, title, "" + imageId);
+			OverlayItem item = new OverlayItem(point, imageLocation, "" + imageId);
         	item.setMarker(new BitmapDrawable(thumb));
         	publishProgress(item);
         	imagesAdded += 1;
