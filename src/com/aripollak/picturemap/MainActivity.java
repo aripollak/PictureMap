@@ -104,6 +104,8 @@ public class MainActivity extends MapActivity {
         	mImageOverlay.mMapView = mMapView;
         	mImageOverlay.mPopup = popup;
         	mImageOverlay.mPopupImage = popupImage;
+        	if (mImageOverlay.getFocus() != null)
+        		mImageOverlay.onFocusChanged(mImageOverlay, mImageOverlay.getFocus());
         } else {
         	Drawable mDrawable = this.getResources().getDrawable(
         							android.R.drawable.ic_menu_myplaces);
