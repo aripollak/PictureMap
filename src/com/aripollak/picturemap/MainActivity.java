@@ -49,7 +49,6 @@ import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 
 
-// TODO: check for leaks; don't share this activity's context
 // TODO: add intent to share location with Maps?
 // TODO: show larger image on click
 // TODO: Attach to media scanner to redo map if card is re-inserted?
@@ -79,6 +78,7 @@ public class MainActivity extends MapActivity {
         mMapView = (MapView) findViewById(R.id.map);
         mMapView.setBuiltInZoomControls(true);
         
+		// TODO: make popup look like a caption
         // Can't embed the popup in main.xml since we can't seem to access
         // the MapView.LayoutParams-specific fields from there.
         mPopup = getLayoutInflater().inflate(R.layout.popup, null); 
@@ -88,7 +88,6 @@ public class MainActivity extends MapActivity {
 				new GeoPoint(0, 0), MapView.LayoutParams.BOTTOM_CENTER);
         mMapView.addView(mPopup, params);
 
-		// TODO: make button look like a caption
 		Button openImageButton = (Button) findViewById(R.id.viewButton);
 		openImageButton.setOnClickListener(mViewImageListener);
 		
@@ -97,9 +96,9 @@ public class MainActivity extends MapActivity {
         							getApplicationContext(), mMapView);
         
     	// If we just had a configuration change, re-use the old image overlay
-    	MainActivity oldInstance = (MainActivity) getLastNonConfigurationInstance();
+    	ImageOverlay oldInstance = (ImageOverlay) getLastNonConfigurationInstance();
         if (oldInstance != null) {
-        	mImageOverlay = oldInstance.mImageOverlay;
+        	mImageOverlay = oldInstance;
         } else {
         	Drawable mDrawable = this.getResources().getDrawable(
         							android.R.drawable.ic_menu_myplaces);
@@ -137,7 +136,7 @@ public class MainActivity extends MapActivity {
     public Object onRetainNonConfigurationInstance() {
     	if (mPopulateMapTask == null || 
     			mPopulateMapTask.getStatus().equals(AsyncTask.Status.FINISHED))
-    		return this;
+    		return mImageOverlay;
     	else
     		// Don't save instance if we haven't finished populating the map
     		// since the old thread will be in a weird state
