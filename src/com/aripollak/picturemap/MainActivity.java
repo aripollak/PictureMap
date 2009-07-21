@@ -56,7 +56,7 @@ import com.google.android.maps.OverlayItem;
 // TODO: let people search for stuff by date/picture
 // TODO: let people re-geotag pictures
 public class MainActivity extends MapActivity {
-	private static final String TAG = "PictureMap";
+	static final String TAG = "PictureMap";
 	MapView mMapView;
 	View mPopup;
 	List<Overlay> mMapOverlays;
@@ -99,10 +99,11 @@ public class MainActivity extends MapActivity {
     	ImageOverlay oldInstance = (ImageOverlay) getLastNonConfigurationInstance();
         if (oldInstance != null) {
         	mImageOverlay = oldInstance;
+        	mImageOverlay.mPopup = mPopup;
         } else {
         	Drawable mDrawable = this.getResources().getDrawable(
         							android.R.drawable.ic_menu_myplaces);
-        	mImageOverlay = new ImageOverlay(mDrawable, mMapView);
+        	mImageOverlay = new ImageOverlay(mDrawable, mPopup);
             Intent intent = getIntent();
             String action = intent.getAction();
             Uri uri = null;
@@ -216,11 +217,11 @@ public class MainActivity extends MapActivity {
 	implements com.google.android.maps.ItemizedOverlay.OnFocusChangeListener {
 
 		private ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
-		//private MapView mMapView;
+		protected View mPopup;
 		
-		public ImageOverlay(Drawable defaultMarker, MapView mapView) {
+		public ImageOverlay(Drawable defaultMarker, View popup) {
 			super(boundCenterBottom(defaultMarker));
-			//mMapView = mapView;
+			mPopup = popup;
 			setOnFocusChangeListener(this);
 			populate();
 		}
