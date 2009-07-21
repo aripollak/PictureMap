@@ -262,11 +262,18 @@ public class MainActivity extends MapActivity {
 			mPopup.setVisibility(View.GONE);
 			if (item == null)
 				return;
+			
 			MapController controller = mMapView.getController();
-			GeoPoint newPoint = item.getPoint();
-			//GeoPoint scrollPoint = new GeoPoint(newPoint.getLatitudeE6(), newPoint.getLongitudeE6());
-			((MapView.LayoutParams) mPopup.getLayoutParams()).point = newPoint;
-			controller.animateTo(newPoint);
+			GeoPoint itemPoint = item.getPoint();
+			((MapView.LayoutParams) mPopup.getLayoutParams()).point = itemPoint;
+			
+			// try to center image on the screen
+			int latitudeAdjust = (int) (mMapView.getLatitudeSpan() / 3.5);
+			GeoPoint scrollPoint = new GeoPoint(
+							itemPoint.getLatitudeE6() + latitudeAdjust,
+							itemPoint.getLongitudeE6());
+			controller.animateTo(scrollPoint);
+			
 			Bitmap bm = ImageUtilities.getThumb(item.getTitle(), 200);
 			mPopupImage.setImageBitmap(bm);
 			mPopup.setVisibility(View.VISIBLE);
