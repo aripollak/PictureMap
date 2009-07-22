@@ -171,7 +171,7 @@ public class MainActivity extends MapActivity {
     }
 */
 
-    /* If the picture callout is visible and the back button is pressed,
+    /* If the back button is pressed and the picture callout is visible,
      * hide the callout. 
      */
     @Override
