@@ -31,6 +31,7 @@ import android.os.Bundle;
 import android.provider.MediaStore.Images;
 import android.util.Config;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -169,6 +170,20 @@ public class MainActivity extends MapActivity {
     	super.onSaveInstanceState(outState);
     }
 */
+
+    /* If the picture callout is visible and the back button is pressed,
+     * hide the callout. 
+     */
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+    	if (keyCode == KeyEvent.KEYCODE_BACK && 
+    				mImageOverlay.getFocus() != null) {
+    		mImageOverlay.setFocus(null);
+    		return true;
+    	}
+
+    	return super.onKeyDown(keyCode, event);
+    }
     
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
