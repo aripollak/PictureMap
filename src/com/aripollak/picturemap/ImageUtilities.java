@@ -22,6 +22,7 @@ import java.io.File;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 
 import com.drewChanged.imaging.jpeg.JpegMetadataReader;
 import com.drewChanged.imaging.jpeg.JpegProcessingException;
@@ -34,6 +35,7 @@ import com.drewChanged.metadata.jpeg.JpegDirectory;
 import com.google.android.maps.GeoPoint;
 
 public class ImageUtilities {
+	static final String TAG = "ImageUtilities"; 
 	/** Try to read the specified image and get a Point from the 
 	 *  location info inside.
 	 *  @param imageLocation path to image on filesystem
@@ -128,6 +130,9 @@ public class ImageUtilities {
 			return null;
 		} catch (MetadataException e) {
 			//e.printStackTrace();
+			return null;
+		} catch (NullPointerException e) {
+			Log.d(TAG, "Couldn't create thumbnail for " + imageLocation);
 			return null;
 		}
 	}

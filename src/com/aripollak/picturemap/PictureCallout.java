@@ -48,6 +48,7 @@ class PictureCallout extends TableLayout {
 	OverlayItem mLastItem;
 	ShowImage mShowImage;
 	
+	// TODO: change layout when we're in landscape mode
 	public PictureCallout(Context context, AttributeSet attrs) {		
 		super(context, attrs);
 		mContext = context;

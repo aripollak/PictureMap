@@ -75,13 +75,11 @@ public class PopulateMapTask extends AsyncTask<Uri, OverlayItem, Integer> {
        		int imageId = cursor.getInt(idColumn);
        		String title = cursor.getString(titleColumn);
     		GeoPoint point = ImageUtilities.getGPSInfo(imageLocation);    		
+    		if (point == null)
+    			continue;
     		Bitmap thumb = ImageUtilities.getThumb(imageLocation, 60);
-    		if (point == null || thumb == null) {
-    			if (mSingleItem)
-    				return 0;
-    			else
-    				continue;
-    		}
+    		if (thumb == null)
+    			continue;
     				
 			// add the thumbnail as the marker
 			OverlayItem item = new OverlayItem(point, imageLocation, "" + imageId);
@@ -90,6 +88,7 @@ public class PopulateMapTask extends AsyncTask<Uri, OverlayItem, Integer> {
         	imagesAdded += 1;
     	} while (cursor.moveToNext() && !isCancelled());
     	
+	cursor.close();
     	return imagesAdded;
 	}
 	
