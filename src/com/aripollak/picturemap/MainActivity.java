@@ -212,6 +212,7 @@ public class MainActivity extends MapActivity {
     protected boolean isRouteDisplayed() { return false; }
     
 
+    // TODO: implement onSnapToItem
 	protected class ImageOverlay extends ItemizedOverlay<OverlayItem> 
 	implements com.google.android.maps.ItemizedOverlay.OnFocusChangeListener {
 
@@ -221,6 +222,7 @@ public class MainActivity extends MapActivity {
 		
 		public ImageOverlay(Drawable defaultMarker, MapView mapView, PictureCallout popup) {
 			super(boundCenterBottom(defaultMarker));
+			setDrawFocusedItem(false);
 			mMapView = mapView;
 			mPopup = popup;
 			setOnFocusChangeListener(this);
