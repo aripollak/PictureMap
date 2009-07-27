@@ -30,29 +30,41 @@ import com.drewChanged.lang.Rational;
 import com.drewChanged.metadata.Directory;
 import com.drewChanged.metadata.Metadata;
 import com.drewChanged.metadata.MetadataException;
+import com.drewChanged.metadata.exif.ExifDirectory;
 import com.drewChanged.metadata.exif.GpsDirectory;
 import com.drewChanged.metadata.jpeg.JpegDirectory;
 import com.google.android.maps.GeoPoint;
 
 public class ImageUtilities {
 	static final String TAG = "ImageUtilities"; 
-	/** Try to read the specified image and get a Point from the 
-	 *  location info inside.
-	 *  @param imageLocation path to image on filesystem
-	 *  @return null if we couldn't get a proper location
+	
+	/**
+	 * @param imageLocation
+	 * @return null if reading failed, the populated Metadata object otherwise
 	 */
-	public static GeoPoint getGPSInfo(String imageLocation) {
+	public static Metadata readMetadata(String imageLocation) {
 		if (!(imageLocation.toLowerCase().endsWith(".jpg") || 
 				imageLocation.toLowerCase().endsWith(".jpeg"))) {
 			return null;
 		}
-		
+		File file = new File(imageLocation);
+		try {
+			return JpegMetadataReader.readMetadata(file);
+		} catch (JpegProcessingException e) {
+			//e.printStackTrace();
+			return null;
+		}
+	}
+	/** Try to read the specified image and get a Point from the 
+	 *  location info inside.
+	 *  @param Metadata populated image metadata
+	 *  @return null if we couldn't get a proper location
+	 */
+	public static GeoPoint getGPSInfo(Metadata metadata) {		
 		int latE6 = 0;
 		int lonE6 = 0;
 		
 		try {
-			File file = new File(imageLocation);
-			Metadata metadata = JpegMetadataReader.readMetadata(file);
 			Directory gpsDirectory = metadata.getDirectory(GpsDirectory.class);
 			if (!gpsDirectory.containsTag(GpsDirectory.TAG_GPS_LATITUDE))
 				return null;
@@ -90,9 +102,6 @@ public class ImageUtilities {
 			lonE6 = degrees * (int)1E6;
 			lonE6 += (((minutes * 60.0) + seconds) / 3600f) * 1E6;
 			lonE6 *= (reference == 'E') ? 1 : -1;
-		} catch (JpegProcessingException e) {
-			//e.printStackTrace();
-			return null;
 		} catch (MetadataException e) {
 			//e.printStackTrace();
 			return null;
@@ -101,19 +110,31 @@ public class ImageUtilities {
 	}
 	
 	/** Try to get a thumbnail from the specified image.
+	 * @param metadata populated image metadata
 	 * @param imageLocation full path to image file
 	 * @param maxDimension maximum width or height, in pixels */ 
-	public static Bitmap getThumb(String imageLocation, int maxDimension) {
+	public static Bitmap getThumb(Metadata metadata, String imageLocation,
+				int maxDimension) {
 		try {
-			File file = new File(imageLocation);
-			Metadata metadata = JpegMetadataReader.readMetadata(file);
-			Directory jpegDirectory = metadata.getDirectory(JpegDirectory.class);
-			if (!jpegDirectory.containsTag(JpegDirectory.TAG_JPEG_IMAGE_WIDTH) || 
-					!jpegDirectory.containsTag(JpegDirectory.TAG_JPEG_IMAGE_HEIGHT))
-				return null;
-			
-			int width = jpegDirectory.getInt(JpegDirectory.TAG_JPEG_IMAGE_WIDTH);
-			int height = jpegDirectory.getInt(JpegDirectory.TAG_JPEG_IMAGE_HEIGHT);
+			int width, height;
+			Bitmap decoded = null;
+			ExifDirectory exifDirectory = (ExifDirectory)
+					metadata.getDirectory(ExifDirectory.class);
+			byte[] thumbnailData = exifDirectory.getThumbnailData();
+			if (thumbnailData != null && 
+						exifDirectory.containsTag(ExifDirectory.TAG_THUMBNAIL_IMAGE_WIDTH) &&
+						exifDirectory.containsTag(ExifDirectory.TAG_THUMBNAIL_IMAGE_HEIGHT)) {
+				width = exifDirectory.getInt(ExifDirectory.TAG_THUMBNAIL_IMAGE_WIDTH);
+				height = exifDirectory.getInt(ExifDirectory.TAG_THUMBNAIL_IMAGE_HEIGHT);
+			} else {
+				Directory jpegDirectory = metadata.getDirectory(JpegDirectory.class);
+				if (!jpegDirectory.containsTag(JpegDirectory.TAG_JPEG_IMAGE_WIDTH) || 
+						!jpegDirectory.containsTag(JpegDirectory.TAG_JPEG_IMAGE_HEIGHT))
+					return null;
+				
+				width = jpegDirectory.getInt(JpegDirectory.TAG_JPEG_IMAGE_WIDTH);
+				height = jpegDirectory.getInt(JpegDirectory.TAG_JPEG_IMAGE_HEIGHT);
+			}
 			// Make sure we keep the aspect ratio, with a maximum edge of maxDimension
 			float factor = Math.max(width / (float)maxDimension, height / (float)maxDimension);
 			int scaledWidth = Math.max(1, (int)(width / factor));
@@ -121,13 +142,18 @@ public class ImageUtilities {
 			// First subsample the image without loading  into memory,
 			// then scale it to exactly the size we want
 			BitmapFactory.Options opts = new BitmapFactory.Options();
-    		opts.inSampleSize = (int) factor; 
+    		opts.inSampleSize = (int) factor;
+			if (thumbnailData != null) {
+				decoded = BitmapFactory.decodeByteArray(
+							thumbnailData, 0, thumbnailData.length, opts);
+			}
+			if (decoded != null) {
+				// last resort, decode entire image if no proper thumbnail
+				decoded = BitmapFactory.decodeFile(imageLocation, opts);
+				Log.d(TAG, "Did not use exif thumbnail for" + imageLocation);
+			}
     		return Bitmap.createScaledBitmap(
-    				BitmapFactory.decodeFile(imageLocation, opts),
-    				scaledWidth, scaledHeight, true);
-		} catch (JpegProcessingException e) {
-			//e.printStackTrace();
-			return null;
+    				decoded, scaledWidth, scaledHeight, true);
 		} catch (MetadataException e) {
 			//e.printStackTrace();
 			return null;

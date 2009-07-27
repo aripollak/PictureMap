@@ -18,6 +18,7 @@
 
 package com.aripollak.picturemap;
 
+import com.drewChanged.metadata.Metadata;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.OverlayItem;
 
@@ -96,7 +97,8 @@ class PictureCallout extends TableLayout {
 		
 		@Override
 		protected Bitmap doInBackground(String... locations) {
-			return ImageUtilities.getThumb(locations[0], 200);
+			Metadata metadata = ImageUtilities.readMetadata(locations[0]);
+			return ImageUtilities.getThumb(metadata, locations[0], 200);
 		}
 		
 		@Override

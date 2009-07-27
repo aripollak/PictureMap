@@ -18,6 +18,8 @@
 
 package com.aripollak.picturemap;
 
+import java.io.File;
+
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -26,6 +28,9 @@ import android.os.AsyncTask;
 import android.provider.MediaStore.Images;
 import android.widget.Toast;
 
+import com.drewChanged.imaging.jpeg.JpegMetadataReader;
+import com.drewChanged.imaging.jpeg.JpegProcessingException;
+import com.drewChanged.metadata.Metadata;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.OverlayItem;
 
@@ -74,18 +79,21 @@ public class PopulateMapTask extends AsyncTask<Uri, OverlayItem, Integer> {
        		String imageLocation = cursor.getString(dataColumn);
        		int imageId = cursor.getInt(idColumn);
        		String title = cursor.getString(titleColumn);
-    		GeoPoint point = ImageUtilities.getGPSInfo(imageLocation);    		
-    		if (point == null)
-    			continue;
-    		Bitmap thumb = ImageUtilities.getThumb(imageLocation, 60);
-    		if (thumb == null)
-    			continue;
-    				
+       		Metadata metadata = ImageUtilities.readMetadata(imageLocation);
+       		if (metadata == null)
+       			continue;
+			GeoPoint point = ImageUtilities.getGPSInfo(metadata);    		
+			if (point == null)
+				continue;
+			Bitmap thumb = ImageUtilities.getThumb(metadata, imageLocation, 60);
+			if (thumb == null)
+				continue;
+					
 			// add the thumbnail as the marker
 			OverlayItem item = new OverlayItem(point, imageLocation, "" + imageId);
-        	item.setMarker(new BitmapDrawable(thumb));
-        	publishProgress(item);
-        	imagesAdded += 1;
+			item.setMarker(new BitmapDrawable(thumb));
+			publishProgress(item);
+			imagesAdded += 1;
     	} while (cursor.moveToNext() && !isCancelled());
     	
 	cursor.close();
