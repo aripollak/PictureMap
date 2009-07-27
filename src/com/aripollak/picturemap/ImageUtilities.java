@@ -53,6 +53,9 @@ public class ImageUtilities {
 		} catch (JpegProcessingException e) {
 			//e.printStackTrace();
 			return null;
+		} catch (NullPointerException e) {
+			//e.printStackTrace();
+			return null;
 		}
 	}
 	/** Try to read the specified image and get a Point from the 
@@ -116,25 +119,16 @@ public class ImageUtilities {
 	public static Bitmap getThumb(Metadata metadata, String imageLocation,
 				int maxDimension) {
 		try {
-			int width, height;
+			int width = 0, height = 0;
 			Bitmap decoded = null;
-			ExifDirectory exifDirectory = (ExifDirectory)
-					metadata.getDirectory(ExifDirectory.class);
-			byte[] thumbnailData = exifDirectory.getThumbnailData();
-			if (thumbnailData != null && 
-						exifDirectory.containsTag(ExifDirectory.TAG_THUMBNAIL_IMAGE_WIDTH) &&
-						exifDirectory.containsTag(ExifDirectory.TAG_THUMBNAIL_IMAGE_HEIGHT)) {
-				width = exifDirectory.getInt(ExifDirectory.TAG_THUMBNAIL_IMAGE_WIDTH);
-				height = exifDirectory.getInt(ExifDirectory.TAG_THUMBNAIL_IMAGE_HEIGHT);
-			} else {
-				Directory jpegDirectory = metadata.getDirectory(JpegDirectory.class);
-				if (!jpegDirectory.containsTag(JpegDirectory.TAG_JPEG_IMAGE_WIDTH) || 
-						!jpegDirectory.containsTag(JpegDirectory.TAG_JPEG_IMAGE_HEIGHT))
-					return null;
-				
-				width = jpegDirectory.getInt(JpegDirectory.TAG_JPEG_IMAGE_WIDTH);
-				height = jpegDirectory.getInt(JpegDirectory.TAG_JPEG_IMAGE_HEIGHT);
-			}
+			Directory jpegDirectory = metadata.getDirectory(JpegDirectory.class);
+			if (!jpegDirectory.containsTag(JpegDirectory.TAG_JPEG_IMAGE_WIDTH) || 
+					!jpegDirectory.containsTag(JpegDirectory.TAG_JPEG_IMAGE_HEIGHT))
+				return null;
+			
+			width = jpegDirectory.getInt(JpegDirectory.TAG_JPEG_IMAGE_WIDTH);
+			height = jpegDirectory.getInt(JpegDirectory.TAG_JPEG_IMAGE_HEIGHT);
+			
 			// Make sure we keep the aspect ratio, with a maximum edge of maxDimension
 			float factor = Math.max(width / (float)maxDimension, height / (float)maxDimension);
 			int scaledWidth = Math.max(1, (int)(width / factor));
@@ -143,15 +137,7 @@ public class ImageUtilities {
 			// then scale it to exactly the size we want
 			BitmapFactory.Options opts = new BitmapFactory.Options();
     		opts.inSampleSize = (int) factor;
-			if (thumbnailData != null) {
-				decoded = BitmapFactory.decodeByteArray(
-							thumbnailData, 0, thumbnailData.length, opts);
-			}
-			if (decoded != null) {
-				// last resort, decode entire image if no proper thumbnail
-				decoded = BitmapFactory.decodeFile(imageLocation, opts);
-				Log.d(TAG, "Did not use exif thumbnail for" + imageLocation);
-			}
+			decoded = BitmapFactory.decodeFile(imageLocation, opts);
     		return Bitmap.createScaledBitmap(
     				decoded, scaledWidth, scaledHeight, true);
 		} catch (MetadataException e) {
