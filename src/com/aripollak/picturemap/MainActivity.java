@@ -21,8 +21,10 @@ package com.aripollak.picturemap;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -53,12 +55,10 @@ import com.google.android.maps.MyLocationOverlay;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 
-
+//TODO: cache thumbnails and locations
 // TODO: make about box!
 // TODO: add intent to share location with Maps?
 // TODO: add forward/back arrows to scroll through images
-// TODO: Attach to media scanner to redo map if card is re-inserted?
-// TODO: cache thumbnails and locations
 // TODO: let people search for stuff by date/picture
 // TODO: let people re-geotag pictures
 public class MainActivity extends MapActivity {
@@ -68,6 +68,8 @@ public class MainActivity extends MapActivity {
 	ImageOverlay mImageOverlay;
 	MyLocationOverlay mMyLocationOverlay;
 	PopulateMapTask mPopulateMapTask;
+	PictureCallout mPopup;
+	BroadcastReceiver mReceiver;
 	
 	/* Called when the activity is first created. */
     @Override
@@ -85,14 +87,14 @@ public class MainActivity extends MapActivity {
         
         // Can't embed the popup in main.xml since we can't seem to access
         // the MapView.LayoutParams-specific fields from there.
-    	PictureCallout popup = (PictureCallout)
-    			getLayoutInflater().inflate(R.layout.popup, null);
+    	mPopup = (PictureCallout)
+    				getLayoutInflater().inflate(R.layout.popup, null);
 		
 		MapView.LayoutParams params = new MapView.LayoutParams(
 				ViewGroup.LayoutParams.WRAP_CONTENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT,
 				new GeoPoint(0, 0), MapView.LayoutParams.BOTTOM_CENTER);
-        mMapView.addView(popup, params);
+        mMapView.addView(mPopup, params);
         
 		
         mMapOverlays = mMapView.getOverlays();
@@ -104,31 +106,59 @@ public class MainActivity extends MapActivity {
         if (oldInstance != null) {
         	mImageOverlay = oldInstance;
         	mImageOverlay.mMapView = mMapView;
-        	mImageOverlay.mPopup = popup;
+        	mImageOverlay.mPopup = mPopup;
         	if (mImageOverlay.getFocus() != null)
         		mImageOverlay.onFocusChanged(mImageOverlay, mImageOverlay.getFocus());
         } else {
-        	Drawable mDrawable = getResources().getDrawable(
-        							android.R.drawable.ic_menu_myplaces);
-        	mImageOverlay = new ImageOverlay(mDrawable, mMapView, popup);
-            Intent intent = getIntent();
-            String action = intent.getAction();
-            Uri uri = null;
-            if (action != null && action.equals(Intent.ACTION_SEND) &&
-            		intent.hasExtra(Intent.EXTRA_STREAM)) {
-                // Handle Share from the Gallery app
-            	uri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
-            }
-            mPopulateMapTask = new PopulateMapTask(this);
-            mPopulateMapTask.execute(uri);
+        	populateMap();
         }
-        
         
     	mMapOverlays.add(mImageOverlay);
     	mMapOverlays.add(mMyLocationOverlay);
+    	
+    	addReceiver();
     }
+
+	private void populateMap() {
+		Drawable mDrawable = getResources().getDrawable(
+								android.R.drawable.ic_menu_myplaces);
+		mImageOverlay = new ImageOverlay(mDrawable, mMapView, mPopup);
+		Intent intent = getIntent();
+		String action = intent.getAction();
+		Uri uri = null;
+		if (action != null && action.equals(Intent.ACTION_SEND) &&
+				intent.hasExtra(Intent.EXTRA_STREAM)) {
+		    // Handle Share from the Gallery app
+			uri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+		}
+    	if (mPopulateMapTask != null)
+    		mPopulateMapTask.cancel(true);
+		mPopulateMapTask = new PopulateMapTask(this);
+		mPopulateMapTask.execute(uri);
+	}
+
+	/** Repopulate the map if the media scanner has scanned again */
+    private void addReceiver() {
+    	IntentFilter intentFilter = new IntentFilter(Intent.ACTION_MEDIA_SCANNER_FINISHED);
+    	intentFilter.addDataScheme("file");
+        mReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if (action.equals(
+                        Intent.ACTION_MEDIA_SCANNER_FINISHED)) {
+                	mMapOverlays.remove(mImageOverlay);
+                	populateMap();
+                	mMapOverlays.add(mImageOverlay);
+
+                }
+            }
+        };
+        registerReceiver(mReceiver, intentFilter);
+	}
     
-    @Override
+    
+	@Override
     protected void onResume() {
     	super.onResume();
     	mMyLocationOverlay.enableMyLocation();
@@ -171,6 +201,7 @@ public class MainActivity extends MapActivity {
     }
 */
 
+    
     /* If the back button is pressed and the picture callout is visible,
      * hide the callout. 
      */
