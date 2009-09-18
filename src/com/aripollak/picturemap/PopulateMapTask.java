@@ -18,8 +18,6 @@
 
 package com.aripollak.picturemap;
 
-import java.io.File;
-
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -28,8 +26,6 @@ import android.os.AsyncTask;
 import android.provider.MediaStore.Images;
 import android.widget.Toast;
 
-import com.drewChanged.imaging.jpeg.JpegMetadataReader;
-import com.drewChanged.imaging.jpeg.JpegProcessingException;
 import com.drewChanged.metadata.Metadata;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.OverlayItem;

@@ -25,25 +25,17 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.MediaStore.Images;
-import android.util.Config;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.maps.GeoPoint;
@@ -55,6 +47,7 @@ import com.google.android.maps.MyLocationOverlay;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 
+// TODO: ADD SATELLITE VIEW
 //TODO: cache thumbnails and locations
 // TODO: make about box!
 // TODO: add intent to share location with Maps?
@@ -147,6 +140,7 @@ public class MainActivity extends MapActivity {
                 String action = intent.getAction();
                 if (action.equals(
                         Intent.ACTION_MEDIA_SCANNER_FINISHED)) {
+					Log.d(TAG, "Media scanner is finished");
                 	mMapOverlays.remove(mImageOverlay);
                 	populateMap();
                 	mMapOverlays.add(mImageOverlay);
