@@ -48,7 +48,6 @@ import com.google.android.maps.MyLocationOverlay;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 
-// TODO: ADD SATELLITE VIEW
 //TODO: cache thumbnails and locations
 // TODO: make about box!
 // TODO: add intent to share location with Maps?
@@ -243,6 +242,7 @@ public class MainActivity extends MapActivity {
     			mMapView.getController().animateTo(point);
     		return true;
     	case R.id.satellite_view:
+    		// TODO: Save this setting
     		mMapView.setSatellite(true);
     		return true;
     	case R.id.map_view:
