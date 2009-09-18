@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="location_unavailable">Location unavailable</string>
+    <string name="map_view">Map View</string>
+    <string name="satellite_view">Satellite View</string>
+    <string name="my_location">My Location</string>
     <string name="toast_no_images">Couldn't find any images with geographic information.</string>
     <string name="select_image">Select image</string>
     <string name="choosepic">Choose Picture</string>

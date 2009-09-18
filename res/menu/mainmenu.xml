@@ -2,6 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
 	android:id="@+id/options_menu">
     <item android:id="@+id/my_location"
-          android:title="My Location"
+          android:title="@string/my_location"
           android:icon="@android:drawable/ic_menu_mylocation" />
+    <item android:id="@+id/satellite_view"
+		    android:title="@string/satellite_view"
+		    android:visible="false" android:icon="@android:drawable/ic_menu_mapmode"/>
+    <item android:id="@+id/map_view"
+		    android:title="@string/map_view"
+		    android:visible="false" android:icon="@android:drawable/ic_menu_mapmode"/>		    
 </menu>

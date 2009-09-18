@@ -34,6 +34,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Toast;
@@ -167,12 +168,13 @@ public class MainActivity extends MapActivity {
     @Override
     public Object onRetainNonConfigurationInstance() {
     	if (mPopulateMapTask == null || 
-    			mPopulateMapTask.getStatus().equals(AsyncTask.Status.FINISHED))
+    			mPopulateMapTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
     		return mImageOverlay;
-    	else
+    	} else {
     		// Don't save instance if we haven't finished populating the map
     		// since the old thread will be in a weird state
     		return null;
+    	}
     }
     
     @Override
@@ -215,6 +217,18 @@ public class MainActivity extends MapActivity {
         inflater.inflate(R.menu.mainmenu, menu);
         return true;
     }
+    
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if (mMapView.isSatellite()) {
+        	menu.findItem(R.id.map_view).setVisible(true);
+    		menu.findItem(R.id.satellite_view).setVisible(false);
+        } else {
+        	menu.findItem(R.id.map_view).setVisible(false);
+        	menu.findItem(R.id.satellite_view).setVisible(true);
+        }
+        return true;
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -223,10 +237,16 @@ public class MainActivity extends MapActivity {
     	case R.id.my_location:
     		GeoPoint point = mMyLocationOverlay.getMyLocation();
     		if (point == null)
-    			Toast.makeText(this, "Location unavailable",
+    			Toast.makeText(this, R.string.location_unavailable,
     						   Toast.LENGTH_SHORT).show();
     		else
     			mMapView.getController().animateTo(point);
+    		return true;
+    	case R.id.satellite_view:
+    		mMapView.setSatellite(true);
+    		return true;
+    	case R.id.map_view:
+    		mMapView.setSatellite(false);
     		return true;
     	}
     	return false;
