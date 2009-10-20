@@ -70,6 +70,8 @@ public class MainActivity extends MapActivity {
     	super.onCreate(savedInstanceState);
     	
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        // so callout progress will show up:
+        setTheme(android.R.style.Theme_Light);
         setContentView(R.layout.main);
 
         /*Button button = (Button)findViewById(R.id.choosepic);
