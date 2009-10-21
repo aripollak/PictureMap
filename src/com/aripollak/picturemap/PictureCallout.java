@@ -56,11 +56,11 @@ class PictureCallout extends TableLayout {
 		
 		mImageView = new ImageView(context);
 		mImageView.setVisibility(GONE);
-		addView(mImageView);
+		addView(mImageView, 150, 150);
 		
 		mProgressBar = new ProgressBar(context);
 		mProgressBar.setIndeterminate(true);
-		addView(mProgressBar, 100, 100); // why does this needs real dimensions?
+		addView(mProgressBar, 150, 150);
 		
 		mViewButton = new Button(context);
 		mViewButton.setText("View image");
@@ -98,7 +98,7 @@ class PictureCallout extends TableLayout {
 		@Override
 		protected Bitmap doInBackground(String... locations) {
 			Metadata metadata = ImageUtilities.readMetadata(locations[0]);
-			return ImageUtilities.getThumb(metadata, locations[0], 200);
+			return ImageUtilities.getThumb(metadata, locations[0], 150);
 		}
 		
 		@Override
