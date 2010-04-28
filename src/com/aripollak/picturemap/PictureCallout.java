@@ -18,27 +18,22 @@
 
 package com.aripollak.picturemap;
 
-import com.drewChanged.metadata.Metadata;
-import com.google.android.maps.ItemizedOverlay;
-import com.google.android.maps.OverlayItem;
-
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.MediaStore.Images;
 import android.util.AttributeSet;
-import android.util.Config;
-import android.util.Log;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TableLayout;
+
+import com.drewChanged.metadata.Metadata;
+import com.google.android.maps.ItemizedOverlay;
+import com.google.android.maps.OverlayItem;
 
 class PictureCallout extends TableLayout {
 	static final String TAG = "PicturePopup";

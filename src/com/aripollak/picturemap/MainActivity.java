@@ -158,6 +158,7 @@ public class MainActivity extends MapActivity {
     protected void onResume() {
     	super.onResume();
     	mMyLocationOverlay.enableMyLocation();
+	// TODO: scan for new pictures, don't re-process stuff that's already in the overlay or cached
     }
     
     @Override
@@ -203,14 +204,12 @@ public class MainActivity extends MapActivity {
      * hide the callout. 
      */
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-    	if (keyCode == KeyEvent.KEYCODE_BACK && 
-    				mImageOverlay.getFocus() != null) {
+    public void onBackPressed() {
+    	if (mImageOverlay.getFocus() != null) {
     		mImageOverlay.setFocus(null);
-    		return true;
+    	} else {
+    		super.onBackPressed();
     	}
-
-    	return super.onKeyDown(keyCode, event);
     }
     
     public boolean onCreateOptionsMenu(Menu menu) {
