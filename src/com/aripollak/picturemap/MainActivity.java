@@ -158,7 +158,7 @@ public class MainActivity extends MapActivity {
     protected void onResume() {
     	super.onResume();
     	mMyLocationOverlay.enableMyLocation();
-	// TODO: scan for new pictures, don't re-process stuff that's already in the overlay or cached
+    	// TODO: scan for new pictures, don't re-process stuff that's already in the overlay or cached
     }
     
     @Override

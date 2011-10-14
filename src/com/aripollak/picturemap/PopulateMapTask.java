@@ -38,7 +38,7 @@ public class PopulateMapTask extends AsyncTask<Uri, OverlayItem, Integer> {
 	// were we called with a single item?
 	private boolean mSingleItem = false;
 	private MainActivity mMainActivity;
-	
+	// TODO: keep track of overlayitems in a hash, and re-use existing ones?
 	public PopulateMapTask(MainActivity ma) {
 		mMainActivity = ma;
 	}
@@ -76,6 +76,7 @@ public class PopulateMapTask extends AsyncTask<Uri, OverlayItem, Integer> {
        		int imageId = cursor.getInt(idColumn);
        		String title = cursor.getString(titleColumn);
        		Metadata metadata = ImageUtilities.readMetadata(imageLocation);
+       		
        		if (metadata == null)
        			continue;
 			GeoPoint point = ImageUtilities.getGPSInfo(metadata);    		
