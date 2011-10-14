@@ -1,0 +1,29 @@
+* 1.0.6:
+  * Add Satellite View
+  * Refresh map if new pictures appear while app is running
+  * Some minor speed improvements
+
+* 1.0.5:
+  * Fixes a crash when we can't decode an image
+
+* 1.0.4:
+  * Now loads larger images
+  * Tapping an image now shows a slightly larger version
+  * More bugfixes
+
+* 1.0.3:
+  * Quicker updates when rotating phone
+  * add My Location to option menu
+  * add ability to click Share from within an image in the Gallery app and open  > it in Picture Map
+
+* 1.0.2:
+  * Show newer images on top
+  * Fix some issues when trying to tap on an image while one was already focused > or the My Location dot was in the way
+  * Reduce package size significantly
+
+* 1.0.1: 
+  * Reads GPS info from any JPEG now                                             
+  * Brings back progress meter in title while loading images
+
+* 1.0.0:
+  * Initial release

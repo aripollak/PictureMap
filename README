@@ -1,0 +1,5 @@
+A simple application to find the geotagged photos on your device and shows them
+on a map (you can enable storing location info in Camera settings). You can
+also tap the images for more options.
+
+Freely licensed under GPLv3 or later.
